@@ -21,7 +21,7 @@ export default function WaitlistLandingPage() {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="space-y-1">
             <div className="flex justify-center">
-              <img src={Logo} alt="Murai logo" className="h-6 md:h-7 lg:h-8 w-auto mb-10" />
+              <img src={Logo} alt="Murai logo" className="h-6 md:h-7 lg:h-8 w-auto mb-20" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium leading-tight">
               Browse with care
