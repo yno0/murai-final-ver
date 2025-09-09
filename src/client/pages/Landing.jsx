@@ -16,7 +16,7 @@ export default function WaitlistLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-['Poppins']">
       {/* Hero Section */}
       <section className="py-8 md:py-10 flex flex-col items-center justify-center px-6 text-center relative z-10">
         <div className="absolute top-4 right-6">
