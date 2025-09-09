@@ -16,7 +16,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden font-['Inter']">
      
 
       <div className="w-full lg:w-full h-full bg-white px-6 md:px-12 xl:px-16 flex flex-col">
