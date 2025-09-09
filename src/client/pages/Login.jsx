@@ -12,7 +12,7 @@ export default function Login() {
 
 
     return (
-        <div className="flex h-screen w-full">
+        <div className="flex h-screen w-full font-['Inter']">
             <div className="hidden lg:block w-1/2 h-full relative overflow-hidden">
                 <div className="absolute inset-2 rounded-2xl  transform transition-all duration-500 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-teal-500 via-teal-600 to-teal-800"></div>
