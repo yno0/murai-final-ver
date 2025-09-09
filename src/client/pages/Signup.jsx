@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import Logo from "../../shared/assets/Logo.svg";
+import Logo from "../../shared/assets/LogoMain.svg";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +22,7 @@ export default function Signup() {
       {/* Top logo and heading outside the card */}
       <div className="w-full max-w-lg text-center ">
         <div className="mb-3 flex justify-center">
-          <img src={Logo} alt="Logo" className="w-30 h-12 object-contain" />
+          <img src={Logo} alt="Logo" className="w-18 h-12 object-contain" />
         </div>
         <h1 className="text-2xl md:text-[40px] mt-10 font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import Logo from "../../shared/assets/Logo.svg";
+import Logo from "../../shared/assets/LogoMain.svg";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +22,7 @@ export default function Login() {
 
             <div className="w-full lg:w-1/2 h-full bg-white px-8 md:px-16 xl:px-24 flex flex-col">
                 <div className="pt-8 pb-16 flex justify-center">
-                    <img src={Logo} alt="Logo" className="w-30 h-12 object-contain" />
+                    <img src={Logo} alt="Logo" className="w-18 h-12 object-contain" />
                 </div>
                 
                 <div className="flex-grow flex items-center justify-center">
