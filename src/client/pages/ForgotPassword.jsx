@@ -16,18 +16,18 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden font-['Inter']">
+    <div className="flex min-h-screen w-full overflow-x-hidden font-['Inter']">
      
 
-      <div className="w-full lg:w-full h-full bg-white px-6 md:px-12 xl:px-16 flex flex-col">
-        <div className="pt-6  flex justify-center">
+      <div className="w-full lg:w-full bg-white px-5 sm:px-8 md:px-12 xl:px-16 py-6 sm:py-8 flex flex-col">
+        <div className="pt-4 sm:pt-6 flex justify-center">
           <img src={Logo} alt="Logo" className="w-30 h-12 object-contain" />
         </div>
 
-        <div className="flex-grow flex items-center justify-center px-2">
-          <div className="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl  border-gray-100">
+        <div className="flex-grow flex items-start sm:items-center justify-center px-3 sm:px-4">
+          <div className="w-full max-w-md bg-white p-6 sm:p-8 rounded-2xl  border-gray-100 mb-6 sm:mb-8">
             <div className="space-y-2 mb-6 text-center">
-              <h1 className="text-[40px] font-semibold font-['Playfair_Display']">Forgot password</h1>
+              <h1 className="text-3xl sm:text-4xl md:text-[40px] font-semibold font-['Playfair_Display']">Forgot password</h1>
               <p className="text-gray-600 text-sm">Enter your email to receive a reset link</p>
             </div>
 
@@ -37,7 +37,7 @@ export default function ForgotPassword() {
               </div>
             ) : null}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1.5">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
                 <input
@@ -66,7 +66,7 @@ export default function ForgotPassword() {
             </div>
           </div>
         </div>
-        <div className="pb-6">
+        <div className="py-6 sm:py-8">
           <p className="text-xs text-gray-500 text-center px-4">
             Still having trouble? <a href="/support" className="underline hover:text-gray-700">Contact our support team</a> for assistance.
           </p>
