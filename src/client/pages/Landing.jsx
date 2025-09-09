@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Logo from "../../shared/assets/Logo.svg";
 
 export default function WaitlistLandingPage() {
@@ -19,12 +20,12 @@ export default function WaitlistLandingPage() {
       {/* Hero Section */}
       <section className="py-8 md:py-10 flex flex-col items-center justify-center px-6 text-center relative z-10">
         <div className="absolute top-4 right-6">
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-[#01434A] border border-[#01434A] rounded-full hover:bg-[#01434A] hover:text-white transition-colors"
           >
             Log in
-          </a>
+          </Link>
         </div>
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="space-y-1">
