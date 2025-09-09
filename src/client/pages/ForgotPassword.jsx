@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Logo from "../../shared/assets/Logo.svg";
+import Logo from "../../shared/assets/LogoMain.svg";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -17,21 +17,17 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <div className="hidden lg:block w-1/2 h-full relative overflow-hidden">
-        <div className="absolute inset-2 rounded-2xl transform transition-all duration-500 overflow-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-teal-500 via-teal-600 to-teal-800"></div>
-        </div>
-      </div>
+     
 
-      <div className="w-full lg:w-1/2 h-full bg-white px-6 md:px-12 xl:px-16 flex flex-col">
-        <div className="pt-6 pb-8 flex justify-center">
+      <div className="w-full lg:w-full h-full bg-white px-6 md:px-12 xl:px-16 flex flex-col">
+        <div className="pt-6  flex justify-center">
           <img src={Logo} alt="Logo" className="w-30 h-12 object-contain" />
         </div>
 
-        <div className="flex-grow flex items-center justify-center">
-          <div className="w-full max-w-md">
+        <div className="flex-grow flex items-center justify-center px-2">
+          <div className="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl  border-gray-100">
             <div className="space-y-2 mb-6 text-center">
-              <h1 className="text-3xl font-medium">Forgot password</h1>
+              <h1 className="text-[40px] font-semibold font-['Playfair_Display']">Forgot password</h1>
               <p className="text-gray-600 text-sm">Enter your email to receive a reset link</p>
             </div>
 
@@ -63,11 +59,17 @@ export default function ForgotPassword() {
                 {isLoading ? 'Sending…' : 'Send reset link'}
               </button>
             </form>
-
-            <p className="text-sm text-gray-600 mt-6 text-center">
-              Remembered it? <a href="/login" className="font-medium text-teal-600 hover:text-teal-700">Back to login</a>
-            </p>
+            <div className="mt-6 space-y-3">
+              <p className="text-sm text-gray-600 text-center">
+                Remembered it? <a href="/login" className="font-medium text-teal-600 hover:text-teal-700">Back to login</a>
+              </p>
+            </div>
           </div>
+        </div>
+        <div className="pb-6">
+          <p className="text-xs text-gray-500 text-center px-4">
+            Still having trouble? <a href="/support" className="underline hover:text-gray-700">Contact our support team</a> for assistance.
+          </p>
         </div>
       </div>
     </div>

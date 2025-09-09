@@ -17,7 +17,7 @@ export default function Signup() {
   };
 
     return (
-    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 font-['Inter']">
+    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-4 font-['Inter']">
 
       {/* Top logo and heading outside the card */}
       <div className="w-full max-w-lg text-center ">
