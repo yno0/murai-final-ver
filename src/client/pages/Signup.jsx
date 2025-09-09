@@ -17,20 +17,19 @@ export default function Signup() {
   };
 
     return (
-    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-4 font-['Inter']">
+    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 font-['Inter']">
 
       {/* Top logo and heading outside the card */}
-      <div className="w-full max-w-lg text-center mb-4">
+      <div className="w-full max-w-lg text-center ">
         <div className="mb-3 flex justify-center">
           <img src={Logo} alt="Logo" className="w-30 h-12 object-contain" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
+        <h1 className="text-2xl md:text-[40px] mt-10 font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
       </div>
 
-      <div className="w-full max-w-lg bg-white rounded-2xl p-6 md:p-8">
+      <div className="w-full max-w-lg  rounded-2xl p-6 md:p-8">
 
         <div className="mb-2 text-center">
-          <p className="text-gray-600 text-sm">Use Google or continue with email</p>
         </div>
 
             <button
@@ -66,7 +65,7 @@ export default function Signup() {
                   id="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
+                  className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
                   placeholder="you@youremail.com"
                   required
                 />
@@ -82,7 +81,7 @@ export default function Signup() {
                     id="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
+                    className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
                     placeholder="At least 8 characters."
                     required
                   />
@@ -107,7 +106,7 @@ export default function Signup() {
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
+                    className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200"
                     placeholder="Re-type password"
                     required
                   />
