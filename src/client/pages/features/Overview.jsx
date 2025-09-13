@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FiUsers, FiShield, FiAlertTriangle, FiClock } from 'react-icons/fi'
+import { FiUsers, FiShield, FiAlertTriangle, FiClock, FiCheckCircle, FiX } from 'react-icons/fi'
 
 export default function Overview() {
   const [isLoading, setIsLoading] = useState(true)
@@ -14,6 +14,23 @@ export default function Overview() {
     { type: 'Loading...', account: 'Fetching recent activity', time: '...', status: 'info' },
   ])
   const [selectedTimeRange] = useState('week')
+  const [showExtensionNotice, setShowExtensionNotice] = useState(false)
+
+  useEffect(() => {
+    // Check if user came from extension
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromExtension = urlParams.get('from') === 'extension' || 
+                         document.referrer.includes('chrome-extension://') ||
+                         window.location.href.includes('from=extension');
+    
+    if (fromExtension) {
+      setShowExtensionNotice(true);
+      // Auto-hide after 8 seconds
+      setTimeout(() => {
+        setShowExtensionNotice(false);
+      }, 8000);
+    }
+  }, []);
 
   useEffect(() => {
     // Minimal demo data without services
@@ -45,6 +62,37 @@ export default function Overview() {
           <h1 className="text-2xl font-semibold text-gray-900">Overview</h1>
           <p className="text-gray-600 mt-1">Your highlights at a glance.</p>
         </div>
+
+        {/* Extension Success Notice */}
+        {showExtensionNotice && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-start">
+              <FiCheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-green-800">
+                  🎉 MURAi Extension Login Successful!
+                </h3>
+                <p className="text-sm text-green-700 mt-1">
+                  You're now logged in! Click the MURAi extension icon in your browser toolbar to access your extension settings and customize your content moderation preferences.
+                </p>
+                <div className="mt-2">
+                  <button
+                    onClick={() => setShowExtensionNotice(false)}
+                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowExtensionNotice(false)}
+                className="ml-2 text-green-600 hover:text-green-800"
+              >
+                <FiX className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

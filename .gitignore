@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Server
+server/
+
+murai-extension/node_modules
+murai-extension/dist
+murai-extension/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

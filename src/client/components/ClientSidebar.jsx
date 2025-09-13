@@ -15,9 +15,11 @@ import {
   FiChevronDown,
   FiMoon,
   FiSun,
+  FiUserPlus,
 } from 'react-icons/fi';
 import Logo from '../../shared/assets/Logo.svg';
 import { LogoutModal } from './ui/LogoutModal';
+import { PricingModal } from './ui/PricingModal';
 
 export function ClientSidebar() {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export function ClientSidebar() {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const accountMenuRef = useRef(null);
 
@@ -72,6 +75,10 @@ export function ClientSidebar() {
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
+
+  const isSubscriber = Boolean(
+    (userData && (userData.isSubscriber || userData.subscription === 'active' || userData.plan === 'pro'))
+  );
 
   const mainMenu = [
     { label: 'Overview', icon: <FiHome />, href: '/client/dashboard' },
@@ -230,33 +237,53 @@ export function ClientSidebar() {
         <div className={`flex flex-col gap-2 mb-3 ${isOpen ? 'px-3' : 'items-center'} relative`}>
           {isOpen ? (
             <>
-              <div className="px-3 py-2">
-                {lowerMenu.map((item) => {
-                  const isActive = item.href ? location.pathname === item.href : false;
-                  const Element = item.href ? 'a' : 'button';
-                  return (
-                    <Element
-                      key={item.label}
-                      href={item.href}
-                      onClick={item.onClick}
-                      className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg w-full transition-all duration-200 ease-in-out ${
-                        isActive
-                          ? 'bg-white text-[#015763] shadow-sm font-semibold'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
-                      }`}
-                      style={{ fontSize: '14px', fontWeight: '400' }}
-                      aria-label={item.label}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-lg flex-shrink-0">{item.icon}</span>
-                        <span className="pl-0.5">{item.label}</span>
-                      </div>
-                      {item.rightElement}
-                    </Element>
-                  );
-                })}
-              </div>
+              {isSubscriber && (
+                <div className="px-3 py-2">
+                  {lowerMenu.map((item) => {
+                    const isActive = item.href ? location.pathname === item.href : false;
+                    const Element = item.href ? 'a' : 'button';
+                    return (
+                      <Element
+                        key={item.label}
+                        href={item.href}
+                        onClick={item.onClick}
+                        className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg w-full transition-all duration-200 ease-in-out ${
+                          isActive
+                            ? 'bg-white text-[#015763] shadow-sm font-semibold'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm'
+                        }`}
+                        style={{ fontSize: '14px', fontWeight: '400' }}
+                        aria-label={item.label}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-lg flex-shrink-0">{item.icon}</span>
+                          <span className="pl-0.5">{item.label}</span>
+                        </div>
+                        {item.rightElement}
+                      </Element>
+                    );
+                  })}
+                </div>
+              )}
               <div className="mx-1 mb-1"></div>
+              {/* Promotional CTA above user info (only for non-subscribers) */}
+              {!isSubscriber && (
+                <div className="px-3 py-2">
+                  <div className="rounded-lg border border-gray-200 p-4 bg-white">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-gray-900">Family-first protection</div>
+                      <div className="text-xs text-gray-500 mt-1">Invite loved ones and keep everyone safer online.</div>
+                      <button
+                        onClick={() => setShowPricingModal(true)}
+                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-100 transition"
+                      >
+                        <FiUserPlus />
+                        Add family
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               <button
                 className="flex items-center justify-between bg-gradient-to-b from-gray-50 to-white rounded-lg px-3 py-3 text-gray-700 text-sm font-semibold shadow-sm w-full focus:outline-none focus:ring-2 focus:ring-gray-400 transition group"
                 onClick={() => setShowAccountMenu((prev) => !prev)}
@@ -288,6 +315,14 @@ export function ClientSidebar() {
         </div>
       </aside>
       <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleLogoutConfirm} />
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        onSelectPlan={(plan) => {
+          setShowPricingModal(false);
+          navigate(`/signup?plan=${encodeURIComponent(plan)}`);
+        }}
+      />
     </>
   );
 }

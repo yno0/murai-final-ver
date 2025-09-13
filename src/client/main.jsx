@@ -4,6 +4,10 @@ import Landing from './pages/Landing.jsx'
 import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
+import SelectUser from './pages/SelectUser.jsx'
+import AuthCallback from './pages/AuthCallback.jsx'
+import TestGoogleAuth from './pages/TestGoogleAuth.jsx'
+import ExtensionSuccess from './pages/ExtensionSuccess.jsx'
 import ClientLayout from './layouts/ClientLayout.jsx'
 import Overview from './pages/features/Overview.jsx'
 import Analytics from './pages/features/Analytics.jsx'
@@ -48,6 +52,10 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: '/extension-success',
+    element: <ExtensionSuccess />,
+  },
+  {
     path: '/signup',
     element: <Signup />,
   },
@@ -60,6 +68,19 @@ const router = createBrowserRouter([
     path: '/forgot-password',
     element: <ForgotPassword />,
   }
+  ,
+  {
+    path: '/select-user',
+    element: <SelectUser />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallback />,
+  },
+  {
+    path: '/test-google-auth',
+    element: <TestGoogleAuth />,
+  },
 ])
 
 export default function ClientApp() {
