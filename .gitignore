@@ -15,9 +15,6 @@ dist-ssr
 # Server
 server/
 
-murai-extension/node_modules
-murai-extension/dist
-murai-extension/
 
 # Editor directories and files
 .vscode/*
