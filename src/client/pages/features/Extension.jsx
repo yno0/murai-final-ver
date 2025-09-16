@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Save, Plus, X, Eye, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { RefreshCw, Settings, User, LogOut, Save, RotateCcw, AlertCircle, CheckCircle, Clock, Eye, Plus, X, ExternalLink } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import extensionSettingsService from '../../services/extensionSettingsService.js'
+import authService from '../../services/authService.js'
+import ExtensionHeader from '../../components/ExtensionHeader.jsx'
 
 export default function Extension() {
-  const [syncStatus, setSyncStatus] = useState({
-    lastSync: new Date(Date.now() - 3600000).toISOString(),
-    status: 'synced',
-  })
-
+  const navigate = useNavigate()
+  const [sidebarWidth, setSidebarWidth] = useState('256px')
   const [settings, setSettings] = useState({
     enabled: true,
     language: 'Both',
@@ -14,52 +15,82 @@ export default function Extension() {
     flaggingStyle: 'highlight',
     highlightColor: '#374151',
     whitelist: { websites: [], terms: [] },
-    dictionary: [],
+    dictionary: []
   })
-
-  const [isLoading, setIsLoading] = useState(false)
+  const [originalSettings, setOriginalSettings] = useState(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-
-  const presetColors = ['#FF4444', '#FFB020', '#10B981', '#3B82F6', '#8B5CF6']
-
+  const [syncStatus, setSyncStatus] = useState({ lastSync: null, status: 'synced' })
+  const [user, setUser] = useState(null)
   const [newWebsite, setNewWebsite] = useState('')
   const [newTerm, setNewTerm] = useState('')
   const [newWord, setNewWord] = useState('')
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [originalSettings, setOriginalSettings] = useState(null)
-  const [sidebarWidth, setSidebarWidth] = useState('4rem')
 
-  const simulateDelay = (ms) => new Promise((r) => setTimeout(r, ms))
+  // Preset colors for highlight color picker
+  const presetColors = ['#374151', '#dc2626', '#ea580c', '#ca8a04', '#65a30d', '#059669', '#0891b2', '#2563eb', '#7c3aed', '#c026d3']
 
-  const loadPreferences = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      await simulateDelay(300)
-      const loadedSettings = {
-        enabled: true,
-        language: 'Both',
-        sensitivity: 'medium',
-        flaggingStyle: 'highlight',
-        highlightColor: '#374151',
-        whitelist: { websites: ['example.com'], terms: ['sample'] },
-        dictionary: ['forbidden', 'restricted'],
-      }
-      setSettings(loadedSettings)
-      setOriginalSettings(JSON.parse(JSON.stringify(loadedSettings)))
-      setHasUnsavedChanges(false)
-      setSyncStatus({ lastSync: new Date().toISOString(), status: 'synced' })
-    } catch (e) {
-      setError('Failed to load preferences')
-      setSyncStatus((prev) => ({ ...prev, status: 'error' }))
-    } finally {
-      setIsLoading(false)
+  // Handle setting changes
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  // Add item to list (whitelist websites, terms, or dictionary)
+  const addToList = (listType, value) => {
+    if (!value.trim()) return
+    
+    if (listType === 'whitelist') {
+      setSettings(prev => ({
+        ...prev,
+        whitelist: {
+          ...prev.whitelist,
+          websites: [...prev.whitelist.websites, value.trim()]
+        }
+      }))
+      setNewWebsite('')
+    } else if (listType === 'terms') {
+      setSettings(prev => ({
+        ...prev,
+        whitelist: {
+          ...prev.whitelist,
+          terms: [...prev.whitelist.terms, value.trim()]
+        }
+      }))
+      setNewTerm('')
+    } else if (listType === 'dictionary') {
+      setSettings(prev => ({
+        ...prev,
+        dictionary: [...prev.dictionary, value.trim()]
+      }))
+      setNewWord('')
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    loadPreferences()
-  }, [loadPreferences])
+  // Remove item from list
+  const removeFromList = (listType, index) => {
+    if (listType === 'whitelist') {
+      setSettings(prev => ({
+        ...prev,
+        whitelist: {
+          ...prev.whitelist,
+          websites: prev.whitelist.websites.filter((_, i) => i !== index)
+        }
+      }))
+    } else if (listType === 'terms') {
+      setSettings(prev => ({
+        ...prev,
+        whitelist: {
+          ...prev.whitelist,
+          terms: prev.whitelist.terms.filter((_, i) => i !== index)
+        }
+      }))
+    } else if (listType === 'dictionary') {
+      setSettings(prev => ({
+        ...prev,
+        dictionary: prev.dictionary.filter((_, i) => i !== index)
+      }))
+    }
+  }
 
   useEffect(() => {
     const checkSidebarWidth = () => {
@@ -77,67 +108,101 @@ export default function Extension() {
     }
   }, [])
 
+  // Load user info
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = authService.getStoredUser()
+        if (userData) {
+          setUser(userData)
+        } else {
+          // Fetch from API if not in localStorage
+          const response = await authService.getCurrentUser()
+          setUser(response.data.user)
+        }
+      } catch (error) {
+        console.error('Failed to load user:', error)
+      }
+    }
+    loadUser()
+  }, [])
+
   const checkForChanges = useCallback((newSettings) => {
     if (!originalSettings) return false
     return JSON.stringify(newSettings) !== JSON.stringify(originalSettings)
   }, [originalSettings])
 
-  const handleSettingChange = (setting, value) => {
-    setSettings((prev) => {
-      const updated = { ...prev, [setting]: value }
-      setHasUnsavedChanges(checkForChanges(updated))
-      return updated
-    })
-  }
+  const loadPreferences = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      // Use actual extension settings service
+      const response = await extensionSettingsService.getSettings()
+      const loadedSettings = extensionSettingsService.convertFromApiFormat(response.data)
+      
+      setSettings(loadedSettings)
+      setOriginalSettings(JSON.parse(JSON.stringify(loadedSettings)))
+      setHasUnsavedChanges(false)
+      setSyncStatus({ 
+        lastSync: loadedSettings.lastSync, 
+        status: loadedSettings.syncStatus 
+      })
+    } catch (e) {
+      setError('Failed to load preferences')
+      setSyncStatus((prev) => ({ ...prev, status: 'error' }))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
-  const addToList = (type, value) => {
-    if (!value.trim()) return
-    setSettings((prev) => {
-      const updated =
-        type === 'dictionary'
-          ? { ...prev, dictionary: [...prev.dictionary, value.trim()] }
-          : {
-              ...prev,
-              whitelist: {
-                websites: type === 'whitelist' ? [...prev.whitelist.websites, value.trim()] : prev.whitelist.websites,
-                terms: type !== 'whitelist' ? [...prev.whitelist.terms, value.trim()] : prev.whitelist.terms,
-              },
-            }
-      setHasUnsavedChanges(checkForChanges(updated))
-      return updated
-    })
-    if (type === 'whitelist') setNewWebsite('')
-    else if (type === 'dictionary') setNewWord('')
-    else setNewTerm('')
-  }
+  useEffect(() => {
+    loadPreferences()
+  }, [loadPreferences])
 
-  const removeFromList = (type, index) => {
-    setSettings((prev) => {
-      const updated =
-        type === 'dictionary'
-          ? { ...prev, dictionary: prev.dictionary.filter((_, i) => i !== index) }
-          : {
-              ...prev,
-              whitelist: {
-                websites: type === 'whitelist' ? prev.whitelist.websites.filter((_, i) => i !== index) : prev.whitelist.websites,
-                terms: type !== 'whitelist' ? prev.whitelist.terms.filter((_, i) => i !== index) : prev.whitelist.terms,
-              },
-            }
-      setHasUnsavedChanges(checkForChanges(updated))
-      return updated
-    })
-  }
+  useEffect(() => {
+    const hasChanges = checkForChanges(settings)
+    setHasUnsavedChanges(hasChanges)
+  }, [settings, checkForChanges])
 
   const handleSync = async () => {
     setSyncStatus((prev) => ({ ...prev, status: 'syncing' }))
     setError(null)
     try {
-      await simulateDelay(500)
-      await loadPreferences()
-      setSyncStatus({ lastSync: new Date().toISOString(), status: 'synced' })
+      console.log('🔄 Starting sync process...')
+      console.log('Last sync timestamp:', syncStatus.lastSync)
+
+      // Check if user is authenticated
+      const token = localStorage.getItem('token')
+      console.log('Token available for sync:', !!token)
+
+      const response = await extensionSettingsService.syncSettings(syncStatus.lastSync)
+      console.log('Sync response:', response)
+
+      const syncedSettings = extensionSettingsService.convertFromApiFormat(response.data)
+      console.log('Synced settings:', syncedSettings)
+
+      setSettings(syncedSettings)
+      setOriginalSettings(JSON.parse(JSON.stringify(syncedSettings)))
+      setHasUnsavedChanges(false)
+      setSyncStatus({
+        lastSync: syncedSettings.lastSync,
+        status: 'synced'
+      })
+      console.log('✅ Sync completed successfully')
     } catch (e) {
-      setError('Failed to sync preferences')
+      console.error('❌ Sync failed:', e)
+      setError(`Failed to sync preferences: ${e.message}`)
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      window.location.href = '/login?from=extension'
+    } catch (error) {
+      console.error('Logout failed:', error)
     }
   }
 
@@ -145,61 +210,133 @@ export default function Extension() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+
     try {
-      await simulateDelay(500)
-      setOriginalSettings(JSON.parse(JSON.stringify(settings)))
+      console.log('🔄 Starting save process...')
+      console.log('Current settings:', settings)
+
+      // Check if user is authenticated
+      const token = localStorage.getItem('token')
+      console.log('Token available:', !!token)
+
+      // Validate settings before sending
+      const validation = extensionSettingsService.validateSettings(settings)
+      if (!validation.isValid) {
+        console.log('❌ Validation failed:', validation.errors)
+        setError(validation.errors.join(', '))
+        return
+      }
+
+      const apiSettings = extensionSettingsService.convertToApiFormat(settings)
+      console.log('API settings to send:', apiSettings)
+
+      const response = await extensionSettingsService.updateSettings(apiSettings)
+      console.log('Save response:', response)
+
+      const updatedSettings = extensionSettingsService.convertFromApiFormat(response.data)
+
+      setSettings(updatedSettings)
+      setOriginalSettings(JSON.parse(JSON.stringify(updatedSettings)))
       setHasUnsavedChanges(false)
-      setSyncStatus({ lastSync: new Date().toISOString(), status: 'synced' })
+      setSyncStatus({
+        lastSync: updatedSettings.lastSync,
+        status: 'synced'
+      })
+      console.log('✅ Settings saved successfully')
     } catch (e) {
-      setError('Failed to save preferences')
+      console.error('❌ Save failed:', e)
+      setError(`Failed to save preferences: ${e.message}`)
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
     } finally {
       setIsLoading(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      <div className={`max-w-7xl mx-auto px-3 py-2 ${hasUnsavedChanges ? 'pb-24' : ''}`}>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-medium text-gray-900">Extension Settings</h1>
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <div className="flex items-center text-sm">
-                {syncStatus.status === 'synced' && <CheckCircle className="w-4 h-4 text-[#015763] mr-2" />}
-                {syncStatus.status === 'syncing' && <RefreshCw className="w-4 h-4 text-[#015763] animate-spin mr-2" />}
-                {syncStatus.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500 mr-2" />}
-                <span className="font-medium text-gray-900">
-                  {syncStatus.status === 'synced' && 'Settings Synced'}
-                  {syncStatus.status === 'syncing' && 'Syncing...'}
-                  {syncStatus.status === 'error' && 'Sync Error'}
-                </span>
-              </div>
-              <span className="text-xs text-gray-500 mt-0.5">Last synced: {new Date(syncStatus.lastSync).toLocaleString()}</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleSync}
-              disabled={syncStatus.status === 'syncing'}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#015763] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white hover:bg-gray-100 h-9 px-4 py-2"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${syncStatus.status === 'syncing' ? 'animate-spin' : ''}`} />
-              Sync Now
-            </button>
-          </div>
+  const handleReset = async () => {
+    if (window.confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        const response = await extensionSettingsService.resetSettings()
+        const resetSettings = extensionSettingsService.convertFromApiFormat(response.data)
+        
+        setSettings(resetSettings)
+        setOriginalSettings(JSON.parse(JSON.stringify(resetSettings)))
+        setHasUnsavedChanges(false)
+        setSyncStatus({ 
+          lastSync: resetSettings.lastSync, 
+          status: 'synced' 
+        })
+      } catch (e) {
+        setError('Failed to reset preferences')
+        setSyncStatus((prev) => ({ ...prev, status: 'error' }))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const getSyncStatusIcon = () => {
+    switch (syncStatus.status) {
+      case 'synced':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'syncing':
+        return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-500" />
+      default:
+        return <RefreshCw className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getSyncStatusText = () => {
+    switch (syncStatus.status) {
+      case 'synced':
+        return 'Synced'
+      case 'syncing':
+        return 'Syncing...'
+      case 'error':
+        return 'Sync Error'
+      default:
+        return 'Not Synced'
+    }
+  }
+
+  if (isLoading && !settings.enabled !== undefined) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading extension settings...</p>
         </div>
-        <div className="border-b border-gray-200 -mx-6 mb-6"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Custom Header */}
+      <ExtensionHeader
+        onSync={handleSync}
+        isLoading={syncStatus.status === 'syncing'}
+        syncStatus={syncStatus}
+        lastSync={syncStatus.lastSync}
+        hasUnsavedChanges={hasUnsavedChanges}
+      />
+
+      <div className={`max-w-7xl mx-auto px-6 py-8 ${hasUnsavedChanges ? 'pb-24' : ''}`}>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-              <span className="text-sm text-red-700">{error}</span>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              <p className="text-red-700">{error}</p>
             </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -261,10 +398,10 @@ export default function Extension() {
                 <p className="text-base text-gray-900 leading-relaxed">
                   This is a sample text with{' '}
                   {settings.flaggingStyle === 'blur' && <span className="filter blur-[4px] bg-gray-100 px-2">flagged content</span>}
-                  {settings.flaggingStyle === 'highlight' && <span style={{ backgroundColor: settings.highlightColor }} className="px-2">flagged content</span>}
+                  {settings.flaggingStyle === 'highlight' && <span style={{ backgroundColor: settings.highlightColor || '#374151' }} className="px-2">flagged content</span>}
                   {settings.flaggingStyle === 'asterisk' && <span className="px-2">**************</span>}
                   {settings.flaggingStyle === 'underline' && (
-                    <span style={{ textDecoration: 'underline', textDecorationColor: settings.highlightColor, textDecorationThickness: '2px' }} className="px-2">flagged content</span>
+                    <span style={{ textDecoration: 'underline', textDecorationColor: settings.highlightColor || '#374151', textDecorationThickness: '2px' }} className="px-2">flagged content</span>
                   )}
                   {settings.flaggingStyle === 'none' && <span className="px-2">flagged content</span>} in context. You can customize how sensitive content appears using the settings below.
                 </p>
@@ -292,15 +429,15 @@ export default function Extension() {
                   <p className="text-sm text-gray-500">Select color for highlights and underlines</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <input type="color" value={settings.highlightColor} onChange={(e) => handleSettingChange('highlightColor', e.target.value)} className="h-10 w-20 rounded-md cursor-pointer border border-gray-200" />
+                  <input type="color" value={settings.highlightColor || '#374151'} onChange={(e) => handleSettingChange('highlightColor', e.target.value)} className="h-10 w-20 rounded-md cursor-pointer border border-gray-200" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-900">{settings.highlightColor.toUpperCase()}</span>
+                    <span className="text-sm font-medium text-gray-900">{settings.highlightColor?.toUpperCase() || '#374151'}</span>
                     <span className="text-xs text-gray-500">Click to change</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-4">
                   {presetColors.map((color) => (
-                    <button type="button" key={color} onClick={() => handleSettingChange('highlightColor', color)} title={color.toUpperCase()} className={`h-8 w-8 rounded-full border ${settings.highlightColor.toLowerCase() === color.toLowerCase() ? 'ring-2 ring-[#015763] border-transparent' : 'border-gray-200'}`} style={{ backgroundColor: color }} />
+                    <button type="button" key={color} onClick={() => handleSettingChange('highlightColor', color)} title={color.toUpperCase()} className={`h-8 w-8 rounded-full border ${(settings.highlightColor || '#374151').toLowerCase() === color.toLowerCase() ? 'ring-2 ring-[#015763] border-transparent' : 'border-gray-200'}`} style={{ backgroundColor: color }} />
                   ))}
                 </div>
               </div>
@@ -309,8 +446,20 @@ export default function Extension() {
 
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900">Whitelist Settings</h2>
-              <p className="text-gray-500 mt-1">Manage exceptions for websites and terms</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Whitelist Settings</h2>
+                  <p className="text-gray-500 mt-1">Manage exceptions for websites and terms</p>
+                </div>
+                <button
+                  onClick={() => navigate('/client/extension/whitelist')}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#015763] bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Manage Whitelist
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -326,15 +475,30 @@ export default function Extension() {
                     Add
                   </button>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                  {settings.whitelist.websites.map((website, index) => (
-                    <div key={index} className="flex items-center justify-between bg-[#FAFCFF] px-4 py-2.5 rounded-md border border-gray-200">
-                      <span className="text-sm font-medium text-gray-900">{website}</span>
-                      <button type="button" onClick={() => removeFromList('whitelist', index)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-md transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
+                <div className="space-y-2">
+                  {settings.whitelist.websites.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm">No websites whitelisted yet</p>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {settings.whitelist.websites.slice(0, 3).map((website, index) => (
+                        <div key={index} className="flex items-center justify-between bg-[#FAFCFF] px-4 py-2.5 rounded-md border border-gray-200">
+                          <span className="text-sm font-medium text-gray-900">{website}</span>
+                          <button type="button" onClick={() => removeFromList('whitelist', index)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-md transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {settings.whitelist.websites.length > 3 && (
+                        <div className="text-center py-2">
+                          <span className="text-sm text-gray-500">
+                            +{settings.whitelist.websites.length - 3} more websites
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -350,15 +514,30 @@ export default function Extension() {
                     Add
                   </button>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                  {settings.whitelist.terms.map((term, index) => (
-                    <div key={index} className="flex items-center justify-between bg-[#FAFCFF] px-4 py-2.5 rounded-md border border-gray-200">
-                      <span className="text-sm font-medium text-gray-900">{term}</span>
-                      <button type="button" onClick={() => removeFromList('terms', index)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-md transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
+                <div className="space-y-2">
+                  {settings.whitelist.terms.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p className="text-sm">No terms whitelisted yet</p>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {settings.whitelist.terms.slice(0, 3).map((term, index) => (
+                        <div key={index} className="flex items-center justify-between bg-[#FAFCFF] px-4 py-2.5 rounded-md border border-gray-200">
+                          <span className="text-sm font-medium text-gray-900">{term}</span>
+                          <button type="button" onClick={() => removeFromList('terms', index)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-md transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {settings.whitelist.terms.length > 3 && (
+                        <div className="text-center py-2">
+                          <span className="text-sm text-gray-500">
+                            +{settings.whitelist.terms.length - 3} more terms
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -398,29 +577,34 @@ export default function Extension() {
             </div>
           </div>
         </form>
-      </div>
 
-      {hasUnsavedChanges && (
-        <div className="fixed bottom-4 bg-white border border-gray-200 shadow-lg z-40 rounded-lg" style={{ left: `calc(${sidebarWidth} + 1rem)`, right: '1rem', transition: 'left 0.3s ease-in-out' }}>
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-gray-900">Unsaved Changes</h3>
-                <p className="text-sm text-gray-500 mt-1">You have unsaved changes to your extension settings</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => { setSettings(originalSettings); setHasUnsavedChanges(false) }} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium border border-gray-200 bg-white hover:bg-gray-50 h-10 px-4 py-2">
-                  Cancel
+        {/* Save bar */}
+        {hasUnsavedChanges && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <p className="text-sm text-gray-600">You have unsaved changes</p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Reset to Default
                 </button>
-                <button type="button" onClick={handleSubmit} disabled={isLoading} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium bg-[#015763] text-white hover:bg-[#015763]/90 h-10 px-6 py-2">
-                  {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

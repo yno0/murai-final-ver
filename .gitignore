@@ -12,11 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Server
-server/
+/server
+/murai-extension
 
-# Extension
-murai-extension/
 
 # Editor directories and files
 .vscode/*

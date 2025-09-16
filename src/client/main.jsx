@@ -16,6 +16,9 @@ import Help from './pages/features/Help.jsx'
 import Settings from './pages/features/Settings.jsx'
 import Group from './pages/features/Group.jsx'
 import Extension from './pages/features/Extension.jsx'
+import WhitelistManagement from './pages/features/WhitelistManagement.jsx'
+import Debug from './pages/Debug.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 function NotFound() {
   return (
@@ -32,13 +35,18 @@ const router = createBrowserRouter([
   },
   {
     path: '/client',
-    element: <ClientLayout />,
+    element: (
+      <ProtectedRoute>
+        <ClientLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: 'dashboard', element: <Overview /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'reports', element: <Report /> },
       { path: 'group', element: <Group /> },
       { path: 'extension', element: <Extension /> },
+      { path: 'extension/whitelist', element: <WhitelistManagement /> },
       { path: 'help', element: <Help /> },
       { path: 'settings', element: <Settings /> },
     ],
@@ -54,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: '/extension-success',
     element: <ExtensionSuccess />,
+  },
+  {
+    path: '/debug',
+    element: <Debug />,
   },
   {
     path: '/signup',

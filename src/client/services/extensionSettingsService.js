@@ -5,7 +5,8 @@ class ExtensionSettingsService {
   async getSettings() {
     try {
       const response = await apiService.request('/extension-settings');
-      return response;
+      // Handle nested response structure from server: { success, data: { settings } }
+      return response.data?.settings ? { data: response.data.settings } : response;
     } catch (error) {
       console.error('Get extension settings failed:', error);
       throw error;
@@ -19,7 +20,8 @@ class ExtensionSettingsService {
         method: 'PUT',
         body: JSON.stringify(settings),
       });
-      return response;
+      // Handle nested response structure from server: { success, data: { settings } }
+      return response.data?.settings ? { data: response.data.settings } : response;
     } catch (error) {
       console.error('Update extension settings failed:', error);
       throw error;
@@ -34,7 +36,8 @@ class ExtensionSettingsService {
         : '/extension-settings/sync';
       
       const response = await apiService.request(endpoint);
-      return response;
+      // Handle nested response structure from server: { success, data: { settings } }
+      return response.data?.settings ? { data: response.data.settings } : response;
     } catch (error) {
       console.error('Sync extension settings failed:', error);
       throw error;
@@ -47,7 +50,8 @@ class ExtensionSettingsService {
       const response = await apiService.request('/extension-settings/reset', {
         method: 'POST',
       });
-      return response;
+      // Handle nested response structure from server: { success, data: { settings } }
+      return response.data?.settings ? { data: response.data.settings } : response;
     } catch (error) {
       console.error('Reset extension settings failed:', error);
       throw error;

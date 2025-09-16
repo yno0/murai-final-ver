@@ -24,6 +24,15 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
+      
+      // Handle 401 - redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login?from=extension';
+        throw new Error('Authentication required');
+      }
+      
       const data = await response.json();
 
       if (!response.ok) {
@@ -152,3 +161,5 @@ class ApiService {
 // Create and export a singleton instance
 const apiService = new ApiService();
 export default apiService;
+
+
