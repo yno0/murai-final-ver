@@ -990,7 +990,7 @@ export default function WaitlistLandingPage() {
                   />
                   <button
                     type="submit"
-                    className="w-full px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors font-medium"
+                    className="w-full px-6 py-3 bg-teal-800 text-white rounded-md hover:bg-teal-900 transition-colors font-medium"
                   >
                     Send Question
                   </button>
@@ -1278,19 +1278,19 @@ export default function WaitlistLandingPage() {
                : 'opacity-0 translate-y-12'
            }`}>
              {/* Line 1: experience safer */}
-             <h2 className="text-5xl md:text-9xl font-black text-black font-['Poppins',_sans-serif] leading-tight">
-               experience <span className="italic font-['Playfair_Display',_serif]">safer</span>
+             <h2 className="text-5xl md:text-9xl font-black text-gray-800 font-['Poppins',_sans-serif] leading-tight">
+               experience <span className="italic font-['Playfair_Display',_serif] text-teal-800">safer</span>
              </h2>
              
              {/* Line 2: browsing + Browser Mockup */}
              <div className="flex items-center justify-center gap-8">
                <h3 className="text-5xl md:text-9xl font-black text-black font-['Poppins',_sans-serif] leading-tight">
-                 <span className="italic font-['Playfair_Display',_serif]">browsing</span>
+                 <span className="italic font-['Playfair_Display',_serif] text-teal-800">browsing</span>
                </h3>
                
                {/* Browser Mockup */}
                <div
-                 className={`w-[300px] h-[150px] bg-black rounded-2xl p-4 relative shadow-2xl cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-3xl ${
+                 className={`w-[300px] h-[150px] bg-teal-900 rounded-2xl p-4 relative shadow-2xl cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-3xl ${
                    isDownloadSectionVisible
                      ? 'opacity-100 translate-y-0 animate-float'
                      : 'opacity-0 translate-y-8'
@@ -1347,12 +1347,12 @@ export default function WaitlistLandingPage() {
              </div>
 
              {/* Line 3: with MURAI */}
-             <h3 className={`text-5xl md:text-9xl font-black text-black font-['Poppins',_sans-serif] leading-tight transition-all duration-1200 ease-out delay-500 ${
+             <h3 className={`text-5xl md:text-9xl font-black text-gray-800 font-['Poppins',_sans-serif] leading-tight transition-all duration-1200 ease-out delay-500 ${
                isDownloadSectionVisible
                  ? 'opacity-100 translate-y-0'
                  : 'opacity-0 translate-y-12'
              }`}>
-               with <span className="italic font-['Playfair_Display',_serif]">MURAI</span>
+               with <span className="italic font-['Playfair_Display',_serif] text-teal-800">MURAi</span>
              </h3>
            </div>
 
@@ -1362,7 +1362,7 @@ export default function WaitlistLandingPage() {
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-12'
           }`}>
-            <button className="bg-black text-white px-12 py-6 rounded-full hover:bg-gray-800 transition-all duration-300 font-medium text-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 font-['Poppins',_sans-serif] min-w-[300px]">
+            <button className="bg-teal-800 text-white px-12 py-6 rounded-full hover:bg-teal-900 transition-all duration-300 font-medium text-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 font-['Poppins',_sans-serif] min-w-[300px]">
               Download Murai
             </button>
           </div>
