@@ -14,10 +14,11 @@ import Analytics from './pages/features/Analytics.jsx'
 import Report from './pages/features/Report.jsx'
 import Help from './pages/features/Help.jsx'
 import Settings from './pages/features/Settings.jsx'
-import Group from './pages/features/Group.jsx'
+
 import Extension from './pages/features/Extension.jsx'
 import WhitelistManagement from './pages/features/WhitelistManagement.jsx'
 import Debug from './pages/Debug.jsx'
+
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 function NotFound() {
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <Overview /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'reports', element: <Report /> },
-      { path: 'group', element: <Group /> },
+
       { path: 'extension', element: <Extension /> },
       { path: 'extension/whitelist', element: <WhitelistManagement /> },
       { path: 'help', element: <Help /> },
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
     path: '/test-google-auth',
     element: <TestGoogleAuth />,
   },
+
 ])
 
 export default function ClientApp() {

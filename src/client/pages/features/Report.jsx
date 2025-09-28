@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   AlertTriangle,
   Filter,
@@ -13,7 +13,10 @@ import {
   User,
   MessageSquare,
   Loader2,
+  ExternalLink,
+  Eye,
 } from 'lucide-react'
+import apiService from '../../services/api.js'
 
 export default function Reports() {
   const [activeFilter, setActiveFilter] = useState('all')
@@ -22,66 +25,51 @@ export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [showSortDropdown, setShowSortDropdown] = useState(false)
+  // Removed flaggedContent state - using only reports now
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [stats, setStats] = useState(null)
 
   const filterRef = useRef(null)
   const sortRef = useRef(null)
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true)
-        setError('')
-        // Simulated data (no services)
-        const sample = [
-          {
-            id: 'r1',
-            content: 'Suspicious link detected',
-            reportedText: 'http://phishing.example',
-            status: 'pending',
-            severity: 'high',
-            date: new Date().toISOString(),
-            reportedBy: 'alice@example.com',
-            group: 'General',
-            response: '',
-          },
-          {
-            id: 'r2',
-            content: 'Potential malware pattern',
-            reportedText: 'script injection',
-            status: 'investigating',
-            severity: 'medium',
-            date: new Date(Date.now() - 3600_000).toISOString(),
-            reportedBy: 'bob@example.com',
-            group: 'Security',
-            response: 'Under review by security team',
-          },
-          {
-            id: 'r3',
-            content: 'Spam content flagged',
-            reportedText: 'Buy now!!!',
-            status: 'resolved',
-            severity: 'low',
-            date: new Date(Date.now() - 86400_000).toISOString(),
-            reportedBy: 'carol@example.com',
-            group: 'Moderation',
-            response: 'Removed and user warned',
-          },
-        ]
-        // Mimic latency
-        await new Promise((r) => setTimeout(r, 300))
-        setReports(sample)
-      } catch (e) {
-        setError('Failed to load reports.')
-        setReports([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
+    loadData()
   }, [])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      // Load reports and stats in parallel
+      const [reportsResponse, statsResponse] = await Promise.all([
+        apiService.getReports({ page: 1, limit: 100 }),
+        apiService.getReportStats().catch(() => ({ data: null })) // Optional stats
+      ])
+
+      console.log('Reports response:', reportsResponse)
+
+      if (reportsResponse.success) {
+        setReports(reportsResponse.data.reports || [])
+      } else {
+        console.warn('Reports response not successful:', reportsResponse)
+        setReports([])
+      }
+
+      if (statsResponse && statsResponse.success && statsResponse.data) {
+        setStats(statsResponse.data)
+      }
+
+    } catch (e) {
+      console.error('Failed to load reports data:', e)
+      setError('Failed to load reports data. Please try again.')
+      setReports([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -98,9 +86,11 @@ export default function Reports() {
 
   const filterOptions = [
     { label: 'All Reports', value: 'all' },
+    { label: 'Open', value: 'open' },
+    { label: 'In Review', value: 'in_review' },
     { label: 'Resolved', value: 'resolved' },
-    { label: 'Pending', value: 'pending' },
-    { label: 'Investigating', value: 'investigating' },
+    { label: 'Dismissed', value: 'dismissed' },
+    { label: 'Escalated', value: 'escalated' },
   ]
   const sortOptions = [
     { label: 'Date', value: 'date' },
@@ -108,8 +98,40 @@ export default function Reports() {
     { label: 'Status', value: 'status' },
   ]
 
-  const filteredReports = Array.isArray(reports)
-    ? reports
+  // Transform reports from database to display format
+  const transformedReports = reports.map(report => ({
+    id: report._id,
+    reportId: report.reportId,
+    content: `Report: ${report.reason.replace('-', ' ').replace('_', ' ')}`,
+    reportedText: report.metadata?.submittedText || report.details || 'No content provided',
+    status: report.status || 'open',
+    severity: report.severity || 'medium',
+    date: report.createdAt,
+    reportedBy: 'User Report',
+    group: report.reason,
+    response: report.resolution?.notes || '',
+    sourceUrl: report.metadata?.submittedUrl,
+    confidence: null, // Reports don't have confidence scores
+    detectionMethod: 'user-reported',
+    domain: report.metadata?.submittedUrl ? (() => {
+      try {
+        return new URL(report.metadata.submittedUrl).hostname;
+      } catch {
+        return 'Invalid URL';
+      }
+    })() : 'Unknown',
+    reason: report.reason,
+    details: report.details,
+    category: report.category,
+    assignedTo: report.assignedTo,
+    resolution: report.resolution
+  }))
+
+  // Use only the actual reports from the database
+  const allReports = transformedReports
+
+  const filteredReports = Array.isArray(allReports)
+    ? allReports
         .filter((report) => {
           const matchesFilter = activeFilter === 'all' || report.status === activeFilter
           const q = searchQuery.trim().toLowerCase()
@@ -139,11 +161,15 @@ export default function Reports() {
   const getStatusInfo = (status) => {
     switch (status) {
       case 'resolved':
-        return { color: 'bg-[#015763]/10 text-[#015763]', icon: CheckCircle }
-      case 'pending':
-        return { color: 'bg-yellow-100 text-yellow-700', icon: Clock }
-      case 'investigating':
-        return { color: 'bg-[#015763]/20 text-[#015763]', icon: AlertCircle }
+        return { color: 'bg-green-100 text-green-700', icon: CheckCircle }
+      case 'open':
+        return { color: 'bg-blue-100 text-blue-700', icon: Clock }
+      case 'in_review':
+        return { color: 'bg-yellow-100 text-yellow-700', icon: AlertCircle }
+      case 'dismissed':
+        return { color: 'bg-gray-100 text-gray-700', icon: AlertCircle }
+      case 'escalated':
+        return { color: 'bg-red-100 text-red-700', icon: AlertTriangle }
       default:
         return { color: 'bg-gray-100 text-gray-700', icon: AlertCircle }
     }
@@ -190,20 +216,64 @@ export default function Reports() {
         <div className="flex justify-between items-center py-4">
           <h1 className="text-2xl font-medium text-gray-900">Content Reports</h1>
           <button
-            onClick={() => {
-              // Re-run local load
-              const evt = new Event('reload')
-              window.dispatchEvent(evt)
-              // quickly re-trigger simulated load
-              const now = Date.now()
-              setReports((prev) => prev.map((r) => ({ ...r, date: new Date(now).toISOString() })))
-            }}
+            onClick={loadData}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <Filter className="w-4 h-4" />
             Refresh
           </button>
         </div>
+
+        {/* Stats Summary */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-[#015763]/10 rounded-lg">
+                  <Flag className="w-5 h-5 text-[#015763]" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-500">Total Flagged</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stats.totalFlagged || allReports.length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-500">Open Reports</p>
+                  <p className="text-2xl font-semibold text-gray-900">{allReports.filter(r => r.status === 'open').length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-500">Resolved</p>
+                  <p className="text-2xl font-semibold text-gray-900">{allReports.filter(r => r.status === 'resolved').length}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-500">High Severity</p>
+                  <p className="text-2xl font-semibold text-gray-900">{allReports.filter(r => r.severity === 'high').length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="border-b border-gray-200 -mx-2"></div>
 
         {error && (
@@ -330,13 +400,44 @@ export default function Reports() {
                         <MessageSquare className="mr-1 h-3.5 w-3.5 text-[#015763]" />
                         {report.group}
                       </span>
+                      {report.confidence && (
+                        <span className="flex items-center">
+                          <Eye className="mr-1 h-3.5 w-3.5 text-[#015763]" />
+                          {Math.round(report.confidence * 100)}% confidence
+                        </span>
+                      )}
+                      {report.sourceUrl && (
+                        <a
+                          href={report.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center text-[#015763] hover:text-[#015763]/80"
+                        >
+                          <ExternalLink className="mr-1 h-3.5 w-3.5" />
+                          {report.domain}
+                        </a>
+                      )}
+                      {report.reportId && (
+                        <span className="flex items-center">
+                          <MessageSquare className="mr-1 h-3.5 w-3.5 text-[#015763]" />
+                          ID: {report.reportId}
+                        </span>
+                      )}
                     </div>
-                    {report.response && (
+                    {(report.response || report.details) && (
                       <div className="mt-3 border-l-2 border-[#015763]/20 pl-3">
-                        <p className="text-xs text-gray-600">
-                          <span className="font-medium text-[#015763]">Response: </span>
-                          {report.response}
-                        </p>
+                        {report.response && (
+                          <p className="text-xs text-gray-600">
+                            <span className="font-medium text-[#015763]">Response: </span>
+                            {report.response}
+                          </p>
+                        )}
+                        {report.details && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            <span className="font-medium text-[#015763]">Details: </span>
+                            {report.details}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -350,10 +451,10 @@ export default function Reports() {
           <div className="rounded-md border border-gray-200 bg-white">
             <div className="flex min-h-[300px] flex-col items-center justify-center text-center p-8">
               <AlertTriangle className="h-10 w-10 text-gray-400" />
-              <h3 className="mt-4 text-sm font-semibold text-gray-900">No reports found</h3>
+              <h3 className="mt-4 text-sm font-semibold text-gray-900">No content reports found</h3>
               <p className="mt-2 text-sm text-gray-500">
-                {!Array.isArray(reports) || reports.length === 0
-                  ? 'No reports have been created yet.'
+                {!Array.isArray(allReports) || allReports.length === 0
+                  ? 'No flagged content has been detected yet. Install the MURAi extension to start monitoring content.'
                   : 'No reports found matching your search. Try adjusting your filters.'}
               </p>
             </div>

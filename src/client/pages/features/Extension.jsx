@@ -12,6 +12,7 @@ export default function Extension() {
     enabled: true,
     language: 'Both',
     sensitivity: 'medium',
+    detectionMode: 'term-based',
     flaggingStyle: 'highlight',
     highlightColor: '#374151',
     whitelist: { websites: [], terms: [] },
@@ -206,6 +207,33 @@ export default function Extension() {
     }
   }
 
+  const syncSettingsToExtension = async (settingsToSync) => {
+    try {
+      console.log('🔄 Syncing settings to extension...')
+
+      // Check if we're in a browser extension context
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        const token = localStorage.getItem('token')
+        if (token) {
+          chrome.runtime.sendMessage({
+            type: 'SYNC_SETTINGS',
+            token: token
+          }, (response) => {
+            if (response?.success) {
+              console.log('✅ Settings synced to extension successfully')
+            } else {
+              console.warn('⚠️ Extension sync failed:', response?.error)
+            }
+          })
+        }
+      } else {
+        console.log('ℹ️ Not in extension context, skipping extension sync')
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to sync settings to extension:', error)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -243,6 +271,9 @@ export default function Extension() {
         status: 'synced'
       })
       console.log('✅ Settings saved successfully')
+
+      // Sync settings to extension chrome.storage
+      await syncSettingsToExtension(updatedSettings)
     } catch (e) {
       console.error('❌ Save failed:', e)
       setError(`Failed to save preferences: ${e.message}`)
@@ -315,7 +346,7 @@ export default function Extension() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Custom Header */}
       <ExtensionHeader
         onSync={handleSync}
@@ -352,7 +383,7 @@ export default function Extension() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="rounded-lg border border-gray-200 p-6">
                 <div className="flex flex-col gap-1.5 mb-4">
                   <label className="text-sm font-medium text-gray-900">Language</label>
@@ -375,6 +406,17 @@ export default function Extension() {
                   <option value="low">Low - Only flag explicit content</option>
                   <option value="medium">Medium - Balanced filtering</option>
                   <option value="high">High - Strict content filtering</option>
+                </select>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 p-6">
+                <div className="flex flex-col gap-1.5 mb-4">
+                  <label className="text-sm font-medium text-gray-900">Detection Mode</label>
+                  <p className="text-sm text-gray-500">Choose how content is analyzed</p>
+                </div>
+                <select value={settings.detectionMode || 'term-based'} onChange={(e) => handleSettingChange('detectionMode', e.target.value)} className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#015763] focus-visible:ring-offset-2">
+                  <option value="term-based">Term-Based - Fast dictionary matching</option>
+                  <option value="context-aware">AI-Powered - Context-aware analysis</option>
                 </select>
               </div>
             </div>

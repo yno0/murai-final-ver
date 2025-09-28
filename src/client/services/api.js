@@ -85,41 +85,7 @@ class ApiService {
     });
   }
 
-  // Group endpoints
-  async getGroupMembers(groupId) {
-    return this.request(`/groups/${groupId}/members`);
-  }
 
-  async inviteMember(groupId, invitationData) {
-    return this.request(`/groups/${groupId}/invite`, {
-      method: 'POST',
-      body: JSON.stringify(invitationData),
-    });
-  }
-
-  async updateMemberRole(groupId, memberId, role) {
-    return this.request(`/groups/${groupId}/members/${memberId}/role`, {
-      method: 'PUT',
-      body: JSON.stringify({ role }),
-    });
-  }
-
-  async removeMember(groupId, memberId) {
-    return this.request(`/groups/${groupId}/members/${memberId}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async getInvitationDetails(token) {
-    return this.request(`/groups/invite/${token}`);
-  }
-
-  async acceptInvitation(token, userData) {
-    return this.request(`/groups/invite/${token}/accept`, {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
-  }
 
   // Extension Settings endpoints
   async getExtensionSettings() {
@@ -146,15 +112,92 @@ class ApiService {
     });
   }
 
-  async getGroupExtensionSettings() {
-    return this.request('/extension-settings/group');
+
+
+  // Detection endpoints
+  async getDetections(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/detections?${queryString}` : '/detections';
+    return this.request(endpoint);
   }
 
-  async updateGroupExtensionSettings(settings) {
-    return this.request('/extension-settings/group', {
-      method: 'PUT',
-      body: JSON.stringify(settings),
+  async getDetectionById(id) {
+    return this.request(`/detections/${id}`);
+  }
+
+  async getDetectionStats() {
+    return this.request('/detections/stats');
+  }
+
+  async updateDetectionStatus(id, status) {
+    return this.request(`/detections/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     });
+  }
+
+  async deleteDetection(id) {
+    return this.request(`/detections/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async createDetection(detectionData) {
+    return this.request('/detections', {
+      method: 'POST',
+      body: JSON.stringify(detectionData),
+    });
+  }
+
+  // Report endpoints
+  async getReports(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/reports?${queryString}` : '/reports';
+    return this.request(endpoint);
+  }
+
+  async getReportById(id) {
+    return this.request(`/reports/${id}`);
+  }
+
+  async getReportStats() {
+    return this.request('/reports/stats');
+  }
+
+  async createReport(reportData) {
+    return this.request('/reports', {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    });
+  }
+
+  async updateReportStatus(id, status) {
+    return this.request(`/reports/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async resolveReport(id, resolution) {
+    return this.request(`/reports/${id}/resolve`, {
+      method: 'PATCH',
+      body: JSON.stringify(resolution),
+    });
+  }
+
+  // Flagged Content endpoints
+  async getFlaggedContent(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/flagged-content?${queryString}` : '/flagged-content';
+    return this.request(endpoint);
+  }
+
+  async getFlaggedContentById(id) {
+    return this.request(`/flagged-content/${id}`);
+  }
+
+  async getFlaggedContentStats() {
+    return this.request('/flagged-content/stats');
   }
 }
 

@@ -136,17 +136,7 @@ class AuthService {
     return user ? user.isSubscriber : false;
   }
 
-  // Check if user has group
-  hasGroup() {
-    const user = this.getStoredUser();
-    return user ? !!user.groupId : false;
-  }
 
-  // Get user role
-  getUserRole() {
-    const user = this.getStoredUser();
-    return user ? user.role : null;
-  }
 }
 
 // Create and export a singleton instance

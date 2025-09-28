@@ -114,7 +114,6 @@ export default function TestGoogleAuth() {
                     </span>
                   </div>
                   <p><strong>Subscriber:</strong> {user.isSubscriber ? 'Yes' : 'No'}</p>
-                  <p><strong>Group ID:</strong> {user.groupId || 'None'}</p>
                   <p><strong>Status:</strong> {user.status}</p>
                 </div>
               </div>

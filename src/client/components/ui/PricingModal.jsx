@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
-import { InviteModal } from './InviteModal'
 
 export function PricingModal({ isOpen, onClose, onSelectPlan }) {
   if (!isOpen) return null
 
-  const [showInvite, setShowInvite] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState(null)
 
   const plans = [
@@ -95,7 +93,7 @@ export function PricingModal({ isOpen, onClose, onSelectPlan }) {
                   }`}
                   onClick={() => {
                     setSelectedPlan(plan.id)
-                    setShowInvite(true)
+                    onSelectPlan?.(plan.id)
                   }}
                 >
                   Get started
@@ -108,14 +106,7 @@ export function PricingModal({ isOpen, onClose, onSelectPlan }) {
         <div className="mt-6 text-center text-xs text-gray-500">
           You can change plans anytime. No credit card required to start.
         </div>
-        <InviteModal
-          isOpen={showInvite}
-          onClose={() => setShowInvite(false)}
-          onInvite={({ emails, role, message }) => {
-            setShowInvite(false)
-            onSelectPlan?.(selectedPlan)
-          }}
-        />
+
       </div>
     </div>
   )

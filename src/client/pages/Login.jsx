@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Logo from "../../shared/assets/LogoMain.svg";
 import authService from '../services/authService.js';
+
 import GoogleAuthButton from '../components/GoogleAuthButton.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [isFromExtension, setIsFromExtension] = useState(false);
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
 
-    // Check if user is coming from the extension
+    // Check if user is coming from the extension or invitation
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const fromExtension = urlParams.get('from') === 'extension' || 
+        const fromExtension = searchParams.get('from') === 'extension' ||
                              document.referrer.includes('chrome-extension://') ||
                              window.location.href.includes('from=extension');
         setIsFromExtension(fromExtension);
-    }, []);
+
+
+    }, [searchParams]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -34,13 +38,7 @@ export default function Login() {
             const response = await authService.login(formData);
 
             if (response.success) {
-                // Check if coming from extension
-                const urlParams = new URLSearchParams(window.location.search);
-                const fromExtension = urlParams.get('from') === 'extension' || 
-                                     document.referrer.includes('chrome-extension://') ||
-                                     window.location.href.includes('from=extension');
-                
-                if (fromExtension) {
+                if (isFromExtension) {
                     // Redirect to extension success page
                     navigate('/extension-success');
                 } else {

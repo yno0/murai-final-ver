@@ -58,30 +58,7 @@ class ExtensionSettingsService {
     }
   }
 
-  // Get group settings (for family/team plans)
-  async getGroupSettings() {
-    try {
-      const response = await apiService.request('/extension-settings/group');
-      return response;
-    } catch (error) {
-      console.error('Get group extension settings failed:', error);
-      throw error;
-    }
-  }
 
-  // Update group settings (for family/team plans)
-  async updateGroupSettings(settings) {
-    try {
-      const response = await apiService.request('/extension-settings/group', {
-        method: 'PUT',
-        body: JSON.stringify(settings),
-      });
-      return response;
-    } catch (error) {
-      console.error('Update group extension settings failed:', error);
-      throw error;
-    }
-  }
 
   // Convert frontend settings format to API format
   convertToApiFormat(settings) {
@@ -89,6 +66,7 @@ class ExtensionSettingsService {
       enabled: settings.enabled,
       language: settings.language,
       sensitivity: settings.sensitivity,
+      detectionMode: settings.detectionMode || 'term-based',
       flaggingStyle: settings.flaggingStyle,
       highlightColor: settings.highlightColor,
       whitelist: {
@@ -105,6 +83,7 @@ class ExtensionSettingsService {
       enabled: apiSettings.enabled,
       language: apiSettings.language,
       sensitivity: apiSettings.sensitivity,
+      detectionMode: apiSettings.detectionMode || 'term-based',
       flaggingStyle: apiSettings.flaggingStyle,
       highlightColor: apiSettings.highlightColor,
       whitelist: {
@@ -124,6 +103,7 @@ class ExtensionSettingsService {
       enabled: true,
       language: 'Both',
       sensitivity: 'medium',
+      detectionMode: 'term-based',
       flaggingStyle: 'highlight',
       highlightColor: '#374151',
       whitelist: {

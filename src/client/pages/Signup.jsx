@@ -1,16 +1,20 @@
-import React, { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Eye, EyeOff, X } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Logo from "../../shared/assets/LogoMain.svg";
 import authService from '../services/authService.js';
+
 import GoogleAuthButton from '../components/GoogleAuthButton.jsx';
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeModal, setActiveModal] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,6 +22,8 @@ export default function Signup() {
     confirmPassword: '',
     plan: 'personal'
   });
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,15 +68,138 @@ export default function Signup() {
     }
   };
 
+  // Modal content
+  const modalContent = {
+    codeOfConduct: {
+      title: "Code of Conduct",
+      content: `
+        <h3 class="text-lg font-semibold mb-4">Our Commitment</h3>
+        <p class="mb-4">We are committed to providing a welcoming and inclusive environment for all users. This Code of Conduct outlines our expectations for behavior and the consequences for unacceptable behavior.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">Expected Behavior</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
+          <li>Be respectful and inclusive in all interactions</li>
+          <li>Use welcoming and inclusive language</li>
+          <li>Be respectful of differing viewpoints and experiences</li>
+          <li>Accept constructive criticism gracefully</li>
+          <li>Focus on what is best for the community</li>
+        </ul>
+        
+        <h3 class="text-lg font-semibold mb-4">Unacceptable Behavior</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
+          <li>Harassment, discrimination, or intimidation</li>
+          <li>Inappropriate or offensive language or imagery</li>
+          <li>Personal attacks or trolling</li>
+          <li>Spam or unsolicited commercial content</li>
+          <li>Violation of privacy or sharing personal information</li>
+        </ul>
+        
+        <h3 class="text-lg font-semibold mb-4">Consequences</h3>
+        <p class="mb-4">Violations of this Code of Conduct may result in warnings, temporary suspension, or permanent ban from our platform.</p>
+      `
+    },
+    termsOfService: {
+      title: "Terms of Service",
+      content: `
+        <h3 class="text-lg font-semibold mb-4">Acceptance of Terms</h3>
+        <p class="mb-4">By accessing and using our service, you accept and agree to be bound by the terms and provision of this agreement.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">Use License</h3>
+        <p class="mb-4">Permission is granted to temporarily download one copy of the materials on our website for personal, non-commercial transitory viewing only.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">User Accounts</h3>
+        <p class="mb-4">You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">Prohibited Uses</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
+          <li>Use our service for any unlawful purpose</li>
+          <li>Transmit any harmful or malicious code</li>
+          <li>Attempt to gain unauthorized access to our systems</li>
+          <li>Interfere with the proper functioning of our service</li>
+        </ul>
+        
+        <h3 class="text-lg font-semibold mb-4">Limitation of Liability</h3>
+        <p class="mb-4">In no event shall our company be liable for any damages arising out of the use or inability to use our service.</p>
+      `
+    },
+    privacyPolicy: {
+      title: "Privacy Policy",
+      content: `
+        <h3 class="text-lg font-semibold mb-4">Information We Collect</h3>
+        <p class="mb-4">We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">How We Use Your Information</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
+          <li>Provide, maintain, and improve our services</li>
+          <li>Process transactions and send related information</li>
+          <li>Send technical notices and support messages</li>
+          <li>Respond to your comments and questions</li>
+        </ul>
+        
+        <h3 class="text-lg font-semibold mb-4">Information Sharing</h3>
+        <p class="mb-4">We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">Data Security</h3>
+        <p class="mb-4">We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+        
+        <h3 class="text-lg font-semibold mb-4">Your Rights</h3>
+        <p class="mb-4">You have the right to access, update, or delete your personal information. You may also opt out of certain communications from us.</p>
+      `
+    }
+  };
+
+  const openModal = (modalType) => {
+    setActiveModal(modalType);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+
+  // Modal Component
+  const Modal = ({ isOpen, onClose, title, content }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div 
+              className="prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+          </div>
+          <div className="flex justify-end p-6 border-t">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
     return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-4 font-['Inter']">
 
       {/* Top logo and heading outside the card */}
-      <div className="w-full max-w-lg text-center ">
-        <div className="mb-3 flex justify-center">
+      <div className="w-full max-w-lg text-center">
+        <div className=" flex justify-center">
           <img src={Logo} alt="Logo" className="w-18 h-12 object-contain" />
         </div>
-        <h1 className="text-2xl md:text-[40px] mt-10 font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
+        <h1 className="text-xl md:text-[35px] font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
       </div>
 
       <div className="w-full max-w-lg  rounded-2xl p-6 md:p-8">
@@ -80,7 +209,7 @@ export default function Signup() {
 
             <GoogleAuthButton text="Continue with Google" />
 
-            <div className="relative my-6">
+            <div className="relative my-3">
               <div className="absolute inset-0 flex items-center" aria-hidden="true">
                 <div className="w-full border-t border-gray-200" />
               </div>
@@ -198,17 +327,37 @@ export default function Signup() {
                   )}
                 </button>
                 <p className="text-xs text-gray-500 leading-relaxed text-center">
-                  By clicking "Create Profile“ you agree to our <a className="underline hover:text-teal-700" href="#">Code of Conduct</a>,
-                  <a className="underline hover:text-teal-700" href="#"> Terms of Service</a> and
-                  <a className="underline hover:text-teal-700" href="#"> Privacy Policy</a>.
+                  By clicking "Create Profile" you agree to our <button type="button" onClick={() => openModal('codeOfConduct')} className="underline hover:text-teal-700">Code of Conduct</button>,
+                  <button type="button" onClick={() => openModal('termsOfService')} className="underline hover:text-teal-700"> Terms of Service</button> and
+                  <button type="button" onClick={() => openModal('privacyPolicy')} className="underline hover:text-teal-700"> Privacy Policy</button>.
                 </p>
               </div>
             </form>
           </div>
       {/* Bottom prompt outside the card */}
-      <div className="w-full max-w-lg text-center mt-4">
+      <div className="w-full max-w-lg text-center mt-1">
         <p className="text-sm text-gray-600">Already have a profile? <a href="/login" className="font-medium text-teal-600 hover:text-teal-700">Log in</a></p>
       </div>
-        </div>
+
+      {/* Modals */}
+      <Modal
+        isOpen={activeModal === 'codeOfConduct'}
+        onClose={closeModal}
+        title={modalContent.codeOfConduct.title}
+        content={modalContent.codeOfConduct.content}
+      />
+      <Modal
+        isOpen={activeModal === 'termsOfService'}
+        onClose={closeModal}
+        title={modalContent.termsOfService.title}
+        content={modalContent.termsOfService.content}
+      />
+      <Modal
+        isOpen={activeModal === 'privacyPolicy'}
+        onClose={closeModal}
+        title={modalContent.privacyPolicy.title}
+        content={modalContent.privacyPolicy.content}
+      />
+    </div>
   );
 }

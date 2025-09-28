@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { Shield, AlertTriangle, TrendingUp, Clock, Download } from 'lucide-react'
+import apiService from '../../services/api.js'
 
 const TabButton = ({ active, onClick, children }) => (
   <button
@@ -100,58 +101,361 @@ const DetailsList = ({ data, renderItem }) => (
 export default function Analytics() {
   const [activeTab, setActiveTab] = useState('summary')
   const [viewMode, setViewMode] = useState({ summary: 'By Count', sites: 'By Visits', languages: 'By Usage' })
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [analyticsData, setAnalyticsData] = useState({
+    kpiData: { totalDetections: 0, activeMonitoring: 0, riskScore: 0, avgResponse: '0s' },
+    detectionTrends: [],
+    detectionsByType: [],
+    siteVisits: [],
+    siteCategories: [],
+    languageDistribution: []
+  })
+  useEffect(() => {
+    loadAnalyticsData()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const kpiData = { totalDetections: 1247, activeMonitoring: 156, riskScore: 82, avgResponse: '2.3s' }
-  const detectionTrends = [
-    { date: 'Mon', detections: 45, threats: 12, safe: 33 },
-    { date: 'Tue', detections: 32, threats: 8, safe: 24 },
-    { date: 'Wed', detections: 67, threats: 15, safe: 52 },
-    { date: 'Thu', detections: 28, threats: 6, safe: 22 },
-    { date: 'Fri', detections: 89, threats: 23, safe: 66 },
-    { date: 'Sat', detections: 54, threats: 14, safe: 40 },
-    { date: 'Sun', detections: 41, threats: 11, safe: 30 },
-  ]
-  const detectionsByType = [
-    { type: 'Phishing', count: 156, percentage: 35 },
-    { type: 'Malware', count: 98, percentage: 22 },
-    { type: 'Data Breach', count: 87, percentage: 20 },
-    { type: 'Spam', count: 67, percentage: 15 },
-    { type: 'Others', count: 35, percentage: 8 },
-  ]
-  const siteVisits = [
-    { site: 'facebook.com', visits: 156, detections: 23, risk: 'high' },
-    { site: 'instagram.com', visits: 142, detections: 18, risk: 'medium' },
-    { site: 'twitter.com', visits: 98, detections: 12, risk: 'low' },
-    { site: 'linkedin.com', visits: 76, detections: 8, risk: 'low' },
-    { site: 'youtube.com', visits: 187, detections: 15, risk: 'medium' },
-    { site: 'tiktok.com', visits: 134, detections: 28, risk: 'high' },
-  ]
-  const siteCategories = [
-    { category: 'Social Media', visits: 456, detections: 89 },
-    { category: 'Entertainment', visits: 234, detections: 45 },
-    { category: 'News', visits: 167, detections: 23 },
-    { category: 'Shopping', visits: 145, detections: 18 },
-    { category: 'Others', visits: 89, detections: 12 },
-  ]
-  const languageDistribution = [
-    { language: 'English', percentage: 45, detections: 567, risk: 'medium' },
-    { language: 'Spanish', percentage: 25, detections: 312, risk: 'high' },
-    { language: 'French', percentage: 15, detections: 189, risk: 'low' },
-    { language: 'German', percentage: 10, detections: 134, risk: 'medium' },
-    { language: 'Others', percentage: 5, detections: 45, risk: 'low' },
-  ]
+  const loadAnalyticsData = async () => {
+    try {
+      setIsLoading(true)
+      setError('')
+
+      // Check if user is authenticated
+      const token = localStorage.getItem('token')
+      if (!token) {
+        console.log('No authentication token found, showing demo data')
+        setAnalyticsData({
+          kpiData: { totalDetections: 0, activeMonitoring: 0, riskScore: 0, avgResponse: '0s' },
+          detectionTrends: [],
+          detectionsByType: [],
+          siteVisits: [],
+          siteCategories: [],
+          languageDistribution: []
+        })
+        setIsLoading(false)
+        return
+      }
+
+      // Load flagged content and reports data
+      const [flaggedResponse, reportsResponse] = await Promise.all([
+        apiService.getFlaggedContent({ page: 1, limit: 1000 }).catch(e => {
+          console.warn('Failed to load flagged content:', e)
+          if (e.message.includes('Authentication required')) {
+            throw new Error('Please log in to view your analytics data')
+          }
+          return { success: false, data: { content: [] } }
+        }),
+        apiService.getReports({ page: 1, limit: 1000 }).catch(e => {
+          console.warn('Failed to load reports:', e)
+          if (e.message.includes('Authentication required')) {
+            throw new Error('Please log in to view your analytics data')
+          }
+          return { success: false, data: { reports: [] } }
+        })
+      ])
+
+      console.log('Analytics data loaded:', { flaggedResponse, reportsResponse })
+
+      const flaggedContent = flaggedResponse.success ? flaggedResponse.data.content || [] : []
+      // const reports = reportsResponse.success ? reportsResponse.data.reports || [] : [] // Future use
+
+      // Process the data to generate analytics
+      const processedData = processAnalyticsData(flaggedContent)
+      setAnalyticsData(processedData)
+
+    } catch (e) {
+      console.error('Failed to load analytics data:', e)
+      setError('Failed to load analytics data. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const processAnalyticsData = (flaggedContent) => {
+    // Calculate KPIs
+    const totalDetections = flaggedContent.length
+    const uniqueDomains = new Set(flaggedContent.map(content => {
+      if (content.sourceUrl) {
+        try {
+          return new URL(content.sourceUrl).hostname
+        } catch {
+          return null
+        }
+      }
+      return content.metadata?.domain || null
+    })).size
+    
+    const avgConfidence = flaggedContent.length > 0 
+      ? flaggedContent.reduce((sum, content) => sum + (content.confidenceScore || 0), 0) / flaggedContent.length
+      : 0
+    const riskScore = Math.round(avgConfidence * 100)
+    
+    const avgResponse = flaggedContent.length > 0
+      ? (flaggedContent.reduce((sum, content) => sum + (content.processingTime || 0), 0) / flaggedContent.length / 1000).toFixed(1) + 's'
+      : '0s'
+
+    // Generate detection trends (last 7 days)
+    const detectionTrends = generateDetectionTrends(flaggedContent)
+    
+    // Generate detections by type based on severity and confidence
+    const detectionsByType = generateDetectionsByType(flaggedContent)
+    
+    // Generate site visits data
+    const siteVisits = generateSiteVisits(flaggedContent)
+    
+    // Generate site categories
+    const siteCategories = generateSiteCategories(flaggedContent)
+    
+    // Generate language distribution
+    const languageDistribution = generateLanguageDistribution(flaggedContent)
+
+    return {
+      kpiData: { totalDetections, activeMonitoring: uniqueDomains, riskScore, avgResponse },
+      detectionTrends,
+      detectionsByType,
+      siteVisits,
+      siteCategories,
+      languageDistribution
+    }
+  }
+
+  const generateDetectionTrends = (flaggedContent) => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const trends = []
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      const dayStart = new Date(date)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(date)
+      dayEnd.setHours(23, 59, 59, 999)
+      
+      const dayContent = flaggedContent.filter(content => {
+        const contentDate = new Date(content.createdAt || content.timestamp)
+        return contentDate >= dayStart && contentDate <= dayEnd
+      })
+      
+      const threats = dayContent.filter(content => (content.confidenceScore || 0) > 0.7).length
+      const safe = dayContent.length - threats
+      
+      trends.push({
+        date: days[date.getDay()],
+        detections: dayContent.length,
+        threats,
+        safe
+      })
+    }
+    
+    return trends
+  }
+
+  const generateDetectionsByType = (flaggedContent) => {
+    const typeMap = {}
+    
+    flaggedContent.forEach(content => {
+      const confidence = content.confidenceScore || 0
+      let type = 'Low Risk'
+      
+      if (confidence > 0.8) type = 'High Risk'
+      else if (confidence > 0.6) type = 'Medium Risk'
+      else if (confidence > 0.4) type = 'Low Risk'
+      else type = 'Very Low Risk'
+      
+      typeMap[type] = (typeMap[type] || 0) + 1
+    })
+    
+    const total = flaggedContent.length
+    return Object.entries(typeMap).map(([type, count]) => ({
+      type,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+    })).sort((a, b) => b.count - a.count)
+  }
+
+  const generateSiteVisits = (flaggedContent) => {
+    const siteMap = {}
+    
+    flaggedContent.forEach(content => {
+      let domain = 'Unknown'
+      if (content.sourceUrl) {
+        try {
+          domain = new URL(content.sourceUrl).hostname
+        } catch {
+          domain = content.metadata?.domain || 'Unknown'
+        }
+      } else if (content.metadata?.domain) {
+        domain = content.metadata.domain
+      }
+      
+      if (!siteMap[domain]) {
+        siteMap[domain] = { visits: 0, detections: 0 }
+      }
+      siteMap[domain].visits += 1
+      siteMap[domain].detections += 1
+    })
+    
+    return Object.entries(siteMap)
+      .map(([site, data]) => {
+        const riskRatio = data.detections / Math.max(data.visits, 1)
+        let risk = 'low'
+        if (riskRatio > 0.3) risk = 'high'
+        else if (riskRatio > 0.1) risk = 'medium'
+        
+        return {
+          site,
+          visits: data.visits,
+          detections: data.detections,
+          risk
+        }
+      })
+      .sort((a, b) => b.visits - a.visits)
+      .slice(0, 6)
+  }
+
+  const generateSiteCategories = (flaggedContent) => {
+    const categoryMap = {}
+    
+    flaggedContent.forEach(content => {
+      let domain = ''
+      if (content.sourceUrl) {
+        try {
+          domain = new URL(content.sourceUrl).hostname
+        } catch {
+          domain = content.metadata?.domain || ''
+        }
+      } else if (content.metadata?.domain) {
+        domain = content.metadata.domain
+      }
+      
+      let category = 'Others'
+      if (domain.includes('facebook') || domain.includes('instagram') || domain.includes('twitter') || domain.includes('linkedin') || domain.includes('tiktok')) {
+        category = 'Social Media'
+      } else if (domain.includes('youtube') || domain.includes('netflix') || domain.includes('twitch')) {
+        category = 'Entertainment'
+      } else if (domain.includes('news') || domain.includes('cnn') || domain.includes('bbc')) {
+        category = 'News'
+      } else if (domain.includes('amazon') || domain.includes('shop') || domain.includes('store')) {
+        category = 'Shopping'
+      }
+      
+      if (!categoryMap[category]) {
+        categoryMap[category] = { visits: 0, detections: 0 }
+      }
+      categoryMap[category].visits += 1
+      categoryMap[category].detections += 1
+    })
+    
+    return Object.entries(categoryMap)
+      .map(([category, data]) => ({
+        category,
+        visits: data.visits,
+        detections: data.detections
+      }))
+      .sort((a, b) => b.visits - a.visits)
+  }
+
+  const generateLanguageDistribution = (flaggedContent) => {
+    const langMap = {}
+    
+    flaggedContent.forEach(content => {
+      const language = content.language || 'Unknown'
+      if (!langMap[language]) {
+        langMap[language] = { count: 0, totalConfidence: 0 }
+      }
+      langMap[language].count += 1
+      langMap[language].totalConfidence += content.confidenceScore || 0
+    })
+    
+    const total = flaggedContent.length
+    return Object.entries(langMap)
+      .map(([language, data]) => {
+        const avgConfidence = data.totalConfidence / data.count
+        let risk = 'low'
+        if (avgConfidence > 0.7) risk = 'high'
+        else if (avgConfidence > 0.4) risk = 'medium'
+        
+        return {
+          language,
+          percentage: total > 0 ? Math.round((data.count / total) * 100) : 0,
+          detections: data.count,
+          risk
+        }
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+  }
 
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-2">
         <div className="flex justify-between items-center py-4">
           <h1 className="text-2xl font-medium text-gray-900">Analytics</h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={loadAnalyticsData}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-[#015763] text-white rounded-lg hover:bg-[#015763]/90 transition-colors disabled:opacity-50"
+            >
+              <Shield className="w-4 h-4" />
+              {isLoading ? 'Loading...' : 'Refresh'}
+            </button>
           <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
             <Download className="w-4 h-4" />
             Export
           </button>
+          </div>
         </div>
         <div className="border-b border-gray-200 -mx-2"></div>
+
+        {/* Authentication Notice */}
+        {!localStorage.getItem('token') && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <Shield className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-blue-800">
+                  🔐 Login Required
+                </h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Please log in to view your analytics data, including detection trends, site analysis, and language distribution.
+                </p>
+                <div className="mt-2">
+                  <a
+                    href="/login"
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Go to Login →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Notice */}
+        {error && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Error Loading Analytics</h3>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <div className="mt-2">
+                  <button
+                    onClick={() => {
+                      setError('')
+                      loadAnalyticsData()
+                    }}
+                    className="text-xs text-red-600 hover:text-red-800 font-medium"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-1 mt-6 bg-gray-100 p-1 rounded-full w-fit">
           {['summary', 'sites', 'languages'].map((tab) => (
@@ -162,10 +466,34 @@ export default function Analytics() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mt-6">
-          <KPICard icon={AlertTriangle} title="Total Detections" value={kpiData.totalDetections} data={detectionTrends} getHeight={(item) => (item.detections / 100) * 48} />
-          <KPICard icon={Shield} title="Active Monitoring" value={kpiData.activeMonitoring} data={siteVisits.slice(0, 6)} getHeight={(item) => (item.visits / 200) * 48} />
-          <KPICard icon={TrendingUp} title="Risk Score" value={`${kpiData.riskScore}%`} data={[82, 78, 85, 80, 82, 79]} getHeight={(score) => (score / 100) * 48} />
-          <KPICard icon={Clock} title="Avg Response" value={kpiData.avgResponse} data={[2.3, 2.1, 2.4, 2.2, 2.3, 2.2]} getHeight={(time) => (time / 3) * 48} />
+          <KPICard 
+            icon={AlertTriangle} 
+            title="Total Detections" 
+            value={isLoading ? '...' : analyticsData.kpiData.totalDetections} 
+            data={analyticsData.detectionTrends} 
+            getHeight={(item) => analyticsData.detectionTrends.length > 0 ? (item.detections / Math.max(...analyticsData.detectionTrends.map(t => t.detections))) * 48 : 0} 
+          />
+          <KPICard 
+            icon={Shield} 
+            title="Active Monitoring" 
+            value={isLoading ? '...' : analyticsData.kpiData.activeMonitoring} 
+            data={analyticsData.siteVisits.slice(0, 6)} 
+            getHeight={(item) => analyticsData.siteVisits.length > 0 ? (item.visits / Math.max(...analyticsData.siteVisits.map(s => s.visits))) * 48 : 0} 
+          />
+          <KPICard 
+            icon={TrendingUp} 
+            title="Risk Score" 
+            value={isLoading ? '...' : `${analyticsData.kpiData.riskScore}%`} 
+            data={analyticsData.detectionTrends.map(t => Math.round(t.threats / Math.max(t.detections, 1) * 100))} 
+            getHeight={(score) => (score / 100) * 48} 
+          />
+          <KPICard 
+            icon={Clock} 
+            title="Avg Response" 
+            value={isLoading ? '...' : analyticsData.kpiData.avgResponse} 
+            data={analyticsData.detectionTrends.map(() => parseFloat(analyticsData.kpiData.avgResponse) || 0)} 
+            getHeight={(time) => (time / 3) * 48} 
+          />
         </div>
 
         <div className="mt-6">
@@ -180,12 +508,18 @@ export default function Analytics() {
                       </div>
                       <h3 className="text-sm font-medium text-[#015763]">Most Common Detection</h3>
                     </div>
-                    <p className="text-2xl font-semibold text-gray-900">{detectionsByType[0].type}</p>
-                    <p className="text-sm text-gray-500 mt-1">{detectionsByType[0].count} detections</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {isLoading ? '...' : analyticsData.detectionsByType[0]?.type || 'No Data'}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {isLoading ? '...' : analyticsData.detectionsByType[0]?.count || 0} detections
+                    </p>
                     <div className="mt-4 pt-4 border-t">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Of Total Detections</span>
-                        <span className="font-medium text-[#015763]">{detectionsByType[0].percentage}%</span>
+                        <span className="font-medium text-[#015763]">
+                          {isLoading ? '...' : analyticsData.detectionsByType[0]?.percentage || 0}%
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -200,15 +534,21 @@ export default function Analytics() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-500">Last 24 Hours</span>
-                        <span className="text-sm font-medium text-gray-900">{detectionTrends[detectionTrends.length - 1].detections} detections</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {isLoading ? '...' : analyticsData.detectionTrends[analyticsData.detectionTrends.length - 1]?.detections || 0} detections
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-500">Safe Content</span>
-                        <span className="text-sm font-medium text-[#015763]">{detectionTrends[detectionTrends.length - 1].safe} items</span>
+                        <span className="text-sm font-medium text-[#015763]">
+                          {isLoading ? '...' : analyticsData.detectionTrends[analyticsData.detectionTrends.length - 1]?.safe || 0} items
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-500">Needs Review</span>
-                        <span className="text-sm font-medium text-[#015763]">{detectionTrends[detectionTrends.length - 1].threats} items</span>
+                        <span className="text-sm font-medium text-[#015763]">
+                          {isLoading ? '...' : analyticsData.detectionTrends[analyticsData.detectionTrends.length - 1]?.threats || 0} items
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -223,7 +563,17 @@ export default function Analytics() {
                       <h3 className="text-sm font-medium text-[#015763]">Detection Distribution</h3>
                     </div>
                   </div>
-                  <DistributionChart data={detectionsByType} dataKey="count" nameKey="type" />
+                  {analyticsData.detectionsByType.length > 0 ? (
+                    <DistributionChart data={analyticsData.detectionsByType} dataKey="count" nameKey="type" />
+                  ) : (
+                    <div className="py-8 text-center">
+                      <AlertTriangle className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-500">No detection data available</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {isLoading ? 'Loading...' : 'Use the MURAi extension to start detecting content'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -233,7 +583,7 @@ export default function Analytics() {
                   <ToggleButtons options={['By Count', 'By Percentage']} activeOption={viewMode.summary} onToggle={(mode) => setViewMode({ ...viewMode, summary: mode })} />
                 </div>
                 <DetailsList
-                  data={detectionsByType}
+                  data={analyticsData.detectionsByType}
                   renderItem={(type) => (
                     <>
                       <div className="flex justify-between items-center mb-2">
@@ -241,7 +591,7 @@ export default function Analytics() {
                         <span className="text-sm font-medium text-[#015763]">{viewMode.summary === 'By Count' ? type.count : `${type.percentage}%`}</span>
                       </div>
                       <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#015763] rounded-full" style={{ width: `${viewMode.summary === 'By Count' ? (type.count / 200) * 100 : type.percentage}%` }} />
+                        <div className="h-full bg-[#015763] rounded-full" style={{ width: `${viewMode.summary === 'By Count' ? (type.count / Math.max(...analyticsData.detectionsByType.map(t => t.count))) * 100 : type.percentage}%` }} />
                       </div>
                     </>
                   )}
@@ -257,7 +607,7 @@ export default function Analytics() {
                   <h2 className="text-lg font-medium text-gray-900">Site Distribution</h2>
                   <ToggleButtons options={['By Visits', 'By Detections']} activeOption={viewMode.sites} onToggle={(mode) => setViewMode({ ...viewMode, sites: mode })} />
                 </div>
-                <DistributionChart data={siteCategories} dataKey={viewMode.sites === 'By Visits' ? 'visits' : 'detections'} nameKey="category" />
+                <DistributionChart data={analyticsData.siteCategories} dataKey={viewMode.sites === 'By Visits' ? 'visits' : 'detections'} nameKey="category" />
               </div>
 
               <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -266,7 +616,7 @@ export default function Analytics() {
                   <ToggleButtons options={['Most Visited', 'Most Detections']} activeOption={viewMode.sites === 'By Visits' ? 'Most Visited' : 'Most Detections'} onToggle={(mode) => setViewMode({ ...viewMode, sites: mode === 'Most Visited' ? 'By Visits' : 'By Detections' })} />
                 </div>
                 <DetailsList
-                  data={siteVisits}
+                  data={analyticsData.siteVisits}
                   renderItem={(site) => (
                     <>
                       <div className="flex justify-between items-start">
@@ -280,7 +630,7 @@ export default function Analytics() {
                         </div>
                       </div>
                       <div className="w-full h-1 bg-gray-200 rounded-full mt-3">
-                        <div className="h-full bg-[#015763] rounded-full" style={{ width: `${(site.detections / site.visits) * 100}%` }} />
+                        <div className="h-full bg-[#015763] rounded-full" style={{ width: `${(site.detections / Math.max(site.visits, 1)) * 100}%` }} />
                       </div>
                     </>
                   )}
@@ -296,7 +646,7 @@ export default function Analytics() {
                   <h2 className="text-lg font-medium text-gray-900">Language Distribution</h2>
                   <ToggleButtons options={['By Usage', 'By Detections']} activeOption={viewMode.languages} onToggle={(mode) => setViewMode({ ...viewMode, languages: mode })} />
                 </div>
-                <DistributionChart data={languageDistribution} dataKey={viewMode.languages === 'By Usage' ? 'percentage' : 'detections'} nameKey="language" />
+                <DistributionChart data={analyticsData.languageDistribution} dataKey={viewMode.languages === 'By Usage' ? 'percentage' : 'detections'} nameKey="language" />
               </div>
 
               <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -305,7 +655,7 @@ export default function Analytics() {
                   <ToggleButtons options={['Most Used', 'Most Detections']} activeOption={viewMode.languages === 'By Usage' ? 'Most Used' : 'Most Detections'} onToggle={(mode) => setViewMode({ ...viewMode, languages: mode === 'Most Used' ? 'By Usage' : 'By Detections' })} />
                 </div>
                 <DetailsList
-                  data={languageDistribution}
+                  data={analyticsData.languageDistribution}
                   renderItem={(lang) => (
                     <>
                       <div className="flex justify-between items-start">

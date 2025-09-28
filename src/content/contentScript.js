@@ -81,7 +81,7 @@ class MuraiContentScript {
       const result = await chrome.storage.sync.get([
         'protectionEnabled', 'language', 'sensitivity', 'flagStyle',
         'highlightColor', 'whitelistWebsites', 'whitelistTerms', 'dictionary',
-        'showHighlight', 'blurAmount', 'confidenceThreshold'
+        'showHighlight', 'blurAmount', 'confidenceThreshold', 'detectionMode'
       ]);
 
       this.settings = {
@@ -95,7 +95,8 @@ class MuraiContentScript {
         dictionary: result.dictionary || [],
         showHighlight: result.showHighlight !== false,
         blurAmount: result.blurAmount || 5,
-        confidenceThreshold: result.confidenceThreshold || 0.7
+        confidenceThreshold: result.confidenceThreshold || 0.7,
+        detectionMode: result.detectionMode || 'term-based'
       };
 
       console.log('📋 MURAi: Comprehensive settings loaded:', this.settings);
@@ -112,7 +113,8 @@ class MuraiContentScript {
         dictionary: [],
         showHighlight: true,
         blurAmount: 5,
-        confidenceThreshold: 0.7
+        confidenceThreshold: 0.7,
+        detectionMode: 'term-based'
       };
       console.log('⚠️ MURAi: Using default settings with protection ENABLED');
     }
@@ -261,9 +263,19 @@ class MuraiContentScript {
       }
     }
 
-    // Send detected CONTEXTS (not just words) to RoBERTa for analysis
+    // Handle contexts based on detection mode
     if (detectedContexts.length > 0) {
-      await this.analyzeContextsWithRoBERTa(detectedContexts);
+      if ((this.settings.detectionMode || 'term-based') === 'term-based') {
+        for (const ctx of detectedContexts) {
+          await this.flagFullContext(ctx, {
+            is_toxic: true,
+            confidence: 1.0,
+            reason: 'Dictionary match (Term-based mode)'
+          });
+        }
+      } else {
+        await this.analyzeContextsWithRoBERTa(detectedContexts);
+      }
     }
   }
 
@@ -355,7 +367,7 @@ class MuraiContentScript {
       // Send uncached contexts to RoBERTa API
       if (uncachedContexts.length > 0) {
         const contextTexts = uncachedContexts.map(item => item.contextText);
-        const results = await this.robertaService.analyzeBatch(contextTexts);
+        const results = await this.robertaService.analyzeBatch(contextTexts, this.getLanguageCode());
 
         // Process results and cache them
         for (let i = 0; i < uncachedContexts.length; i++) {
@@ -394,6 +406,19 @@ class MuraiContentScript {
           console.log(`⚠️ Fallback skipping ambiguous context: "${context.contextText}"`);
         }
       }
+    }
+  }
+
+  getLanguageCode() {
+    try {
+      const lang = (this.settings.language || '').toLowerCase();
+      // Map settings to API language codes
+      if (lang.includes('tagalog') || lang.includes('taglish') || lang.includes('both') || lang.includes('mixed') || lang === 'fil') {
+        return 'fil';
+      }
+      return 'en';
+    } catch (e) {
+      return 'fil';
     }
   }
 
@@ -503,6 +528,11 @@ class MuraiContentScript {
       this.flaggedElements.add(wrapper);
 
       console.log(`🚩 Full context flagged: "${contextInfo.contextText.substring(0, 50)}..." (confidence: ${analysis.confidence})`);
+
+      // Submit detection data to server (async, non-blocking)
+      this.submitDetectionToServer(contextInfo, analysis).catch(error => {
+        console.warn('⚠️ Failed to submit detection to server:', error);
+      });
 
     } catch (error) {
       console.error('❌ Error flagging context:', error);
@@ -912,6 +942,67 @@ class MuraiContentScript {
   }
 
   /**
+   * Submit detection data to server for persistent storage
+   */
+  async submitDetectionToServer(contextInfo, analysis) {
+    try {
+      // Check if user is authenticated (has token)
+      const result = await chrome.storage.sync.get(['token', 'isLoggedIn']);
+      if (!result.token || !result.isLoggedIn) {
+        console.log('🔒 User not authenticated, skipping server submission');
+        return;
+      }
+
+      // Extract detected term from the match
+      const detectedTerm = contextInfo.originalMatch?.word || contextInfo.match?.word || 'unknown';
+
+      // Prepare detection data in the format expected by the server
+      const detectionData = {
+        detectedTerm: detectedTerm,
+        context: contextInfo.contextText || contextInfo.fullText,
+        site: {
+          url: window.location.href,
+          title: document.title || 'Unknown Page'
+        },
+        aiResponse: {
+          isToxic: analysis.is_toxic || true,
+          confidence: analysis.confidence || 0.7,
+          reason: analysis.reason || 'Content flagged by MURAi detection system',
+          modelVersion: 'roberta-v1',
+          language: this.settings.language || 'Mixed'
+        },
+        metadata: {
+          detectionMethod: this.settings.detectionMode || 'hybrid',
+          processingTime: Date.now() - (this.detectionStartTime || Date.now()),
+          extensionVersion: chrome.runtime.getManifest()?.version || '1.0.0'
+        }
+      };
+
+      // Send to background script for API request
+      chrome.runtime.sendMessage({
+        type: 'API_REQUEST',
+        url: 'http://localhost:5000/api/detections',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${result.token}`,
+          'X-Extension-Version': detectionData.metadata.extensionVersion
+        },
+        body: JSON.stringify(detectionData)
+      }, (response) => {
+        if (response?.success) {
+          console.log('✅ Detection submitted to server successfully:', response.data?.detectionId);
+        } else {
+          console.warn('⚠️ Failed to submit detection to server:', response?.error);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Error submitting detection to server:', error);
+    }
+  }
+
+  /**
    * Get current detection statistics
    */
   getDetectionStats() {
@@ -1047,15 +1138,9 @@ class RoBERTaService {
   constructor() {
     this.endpoints = [
       {
-        url: 'https://ynoope-murai.hf.space/api/analyze',
-        name: 'Primary RoBERTa',
-        format: 'murai'
-      },
-      {
-        url: 'https://api-inference.huggingface.co/models/unitary/toxic-bert',
-        name: 'HuggingFace Toxic-BERT',
-        format: 'huggingface',
-        headers: { 'Authorization': 'Bearer hf_demo_token' }
+        url: 'https://ynoope-murai.hf.space/predict',
+        name: 'MURAi Predict',
+        format: 'predict'
       }
     ];
     this.currentEndpointIndex = 0;
@@ -1064,7 +1149,7 @@ class RoBERTaService {
     this.fallbackMode = false;
   }
 
-  async analyzeBatch(phrases) {
+  async analyzeBatch(phrases, lang) {
     // If in fallback mode, skip API calls
     if (this.fallbackMode) {
       console.log('⚠️ Using fallback mode - skipping API calls');
@@ -1080,7 +1165,7 @@ class RoBERTaService {
 
       for (const batch of batches) {
         try {
-          const results = await this.processBatchWithFallback(batch);
+          const results = await this.processBatchWithFallback(batch, lang);
           allResults.push(...results);
         } catch (batchError) {
           console.warn('⚠️ Batch processing failed, using fallback:', batchError);
@@ -1097,7 +1182,7 @@ class RoBERTaService {
     }
   }
 
-  async processBatchWithFallback(phrases) {
+  async processBatchWithFallback(phrases, lang) {
     // Try each endpoint in order
     for (let i = 0; i < this.endpoints.length; i++) {
       const endpointIndex = (this.currentEndpointIndex + i) % this.endpoints.length;
@@ -1105,7 +1190,7 @@ class RoBERTaService {
 
       try {
         console.log(`🔄 Trying ${endpoint.name}...`);
-        const results = await this.processBatch(phrases, endpoint);
+        const results = await this.processBatch(phrases, endpoint, lang);
 
         // Success! Update current endpoint
         this.currentEndpointIndex = endpointIndex;
@@ -1150,17 +1235,51 @@ class RoBERTaService {
       confidence = Math.min(confidence, 0.9);
 
       return {
+        is_toxic: true,
         confidence: confidence,
-        reason: 'Dictionary-based analysis (AI unavailable)'
+        reason: 'Dictionary-based detection (fallback)'
       };
     });
   }
 
-  async processBatch(phrases, endpoint) {
+  async processBatch(phrases, endpoint, lang) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
+      if (endpoint.format === 'predict') {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(endpoint.headers || {})
+        };
+
+        const results = await Promise.all(
+          phrases.map(async (text) => {
+            const resp = await fetch(endpoint.url, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({ text, lang: lang || 'fil' }),
+              signal: controller.signal
+            });
+            if (!resp.ok) {
+              throw new Error(`${endpoint.name} failed: ${resp.status} ${resp.statusText}`);
+            }
+            const data = await resp.json();
+            return {
+              is_toxic: !!data.is_toxic,
+              confidence: typeof data.confidence === 'number' ? data.confidence : 0,
+              probabilities: data.probabilities,
+              reason: 'AI verification'
+            };
+          })
+        );
+        clearTimeout(timeoutId);
+        console.log(`✅ ${endpoint.name} responses received`);
+        return results;
+      }
+
+      // Legacy formats (kept for compatibility)
       const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -1169,20 +1288,15 @@ class RoBERTaService {
 
       let body;
       if (endpoint.format === 'huggingface') {
-        body = JSON.stringify({
-          inputs: phrases
-        });
+        body = JSON.stringify({ inputs: phrases });
       } else {
-        body = JSON.stringify({
-          texts: phrases,
-          model: 'roberta-base'
-        });
+        body = JSON.stringify({ texts: phrases, model: 'roberta-base' });
       }
 
       const response = await fetch(endpoint.url, {
         method: 'POST',
-        headers: headers,
-        body: body,
+        headers,
+        body,
         signal: controller.signal
       });
 
@@ -1195,7 +1309,6 @@ class RoBERTaService {
       const data = await response.json();
       console.log(`✅ ${endpoint.name} response received`);
 
-      // Normalize response format
       if (endpoint.format === 'huggingface') {
         return this.normalizeHuggingFaceResponse(data, phrases);
       } else {

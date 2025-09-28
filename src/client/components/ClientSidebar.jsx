@@ -11,6 +11,7 @@ import {
   FiLogOut,
   FiSettings,
   FiUser,
+
   FiChevronUp,
   FiChevronDown,
   FiMoon,
@@ -21,6 +22,7 @@ import Logo from '../../shared/assets/Logo.svg';
 import { LogoutModal } from './ui/LogoutModal';
 import { PricingModal } from './ui/PricingModal';
 
+
 export function ClientSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +31,7 @@ export function ClientSidebar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+
   const [userData, setUserData] = useState(null);
   const accountMenuRef = useRef(null);
 
@@ -36,12 +39,15 @@ export function ClientSidebar() {
     const user = localStorage.getItem('user');
     if (user) {
       try {
-        setUserData(JSON.parse(user));
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
     }
   }, []);
+
+
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true);
@@ -55,6 +61,8 @@ export function ClientSidebar() {
     setShowAccountMenu(false);
     navigate('/login');
   };
+
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -172,7 +180,7 @@ export function ClientSidebar() {
         }`}
         style={{ fontFamily: 'Poppins, sans-serif', position: 'relative' }}
       >
-        <div>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400" style={{ scrollBehavior: 'smooth' }}>
           {!isOpen && (
             <div className="flex items-center mb-16 mt-2 justify-center" style={{ minHeight: 56 }}>
               <button
@@ -266,24 +274,7 @@ export function ClientSidebar() {
                 </div>
               )}
               <div className="mx-1 mb-1"></div>
-              {/* Promotional CTA above user info (only for non-subscribers) */}
-              {!isSubscriber && (
-                <div className="px-3 py-2">
-                  <div className="rounded-lg border border-gray-200 p-4 bg-white">
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-gray-900">Family-first protection</div>
-                      <div className="text-xs text-gray-500 mt-1">Invite loved ones and keep everyone safer online.</div>
-                      <button
-                        onClick={() => setShowPricingModal(true)}
-                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-100 transition"
-                      >
-                        <FiUserPlus />
-                        Add family
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+
               <button
                 className="flex items-center justify-between bg-gradient-to-b from-gray-50 to-white rounded-lg px-3 py-3 text-gray-700 text-sm font-semibold shadow-sm w-full focus:outline-none focus:ring-2 focus:ring-gray-400 transition group"
                 onClick={() => setShowAccountMenu((prev) => !prev)}
@@ -323,6 +314,7 @@ export function ClientSidebar() {
           navigate(`/signup?plan=${encodeURIComponent(plan)}`);
         }}
       />
+
     </>
   );
 }
