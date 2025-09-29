@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../../shared/assets/Logo.svg";
 import LogoMain from "../../shared/assets/LogoMain.svg";
+import HeroImg from "../../shared/assets/hero-img.png";
 
 export default function WaitlistLandingPage() {
   const [currentTechnique, setCurrentTechnique] = useState(0);
@@ -13,7 +14,6 @@ export default function WaitlistLandingPage() {
   const [emailInput, setEmailInput] = useState('');
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [isHoveringBrowser, setIsHoveringBrowser] = useState(false);
   const [isDownloadSectionVisible, setIsDownloadSectionVisible] = useState(false);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [isFeaturesVisible, setIsFeaturesVisible] = useState(false);
@@ -37,7 +37,7 @@ export default function WaitlistLandingPage() {
       type: 'original',
       text: 'inappropriate',
       display: 'inappropriate',
-      style: 'text-red-600 font-bold transform scale-105'
+      style: 'text-red-400 font-bold transform scale-105'
     },
     {
       type: 'blur',
@@ -49,7 +49,7 @@ export default function WaitlistLandingPage() {
       type: 'asterisk',
       text: 'inappropriate',
       display: 'inappropr****',
-      style: 'text-gray-700 font-mono tracking-wider transform scale-100'
+      style: "text-gray-500 font-['Playfair_Display',_serif] tracking-wider transform scale-100"
     },
     {
       type: 'highlight',
@@ -187,76 +187,75 @@ export default function WaitlistLandingPage() {
   return (
     <div className="min-h-screen bg-white font-['Inter',_'system-ui',_sans-serif]">
       {/* Navigation Header */}
-      <header className="w-full px-6 py-6 bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <nav className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img src={Logo} alt="Murai logo" className="h-10 w-auto" />
-          </div>
+      <header className="w-full sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+          <nav className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-md px-4 sm:px-6 py-3 sm:py-4">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <img src={LogoMain} alt="Murai logo" className="h-6 sm:h-8 w-auto" />
+                <span className="text-lg sm:text-xl font-bold text-gray-900 font-['Poppins',_sans-serif]">MURAI</span>
+              </div>
 
-          {/* Navigation Links */}
-          <div className="hidden lg:flex items-center space-x-12">
-            <a
-              href="#about"
-              className="text-gray-700 hover:text-[#01434A] transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base relative group"
-            >
-              About
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#01434A] transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a
-              href="#features"
-              className="text-gray-700 hover:text-[#01434A] transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base relative group"
-            >
-              Features
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#01434A] transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a
-              href="#how-it-works"
-              className="text-gray-700 hover:text-[#01434A] transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base relative group"
-            >
-              How it works
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#01434A] transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a
-              href="#pricing"
-              className="text-gray-700 hover:text-[#01434A] transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base relative group"
-            >
-              Pricing
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#01434A] transition-all duration-300 group-hover:w-full"></span>
-            </a>
-          </div>
+              {/* Center Navigation */}
+              <div className="hidden lg:flex items-center space-x-1">
+                <a
+                  href="#about"
+                  className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                >
+                  About
+                </a>
+                <a
+                  href="#features"
+                  className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                >
+                  Features
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                >
+                  How it works
+                </a>
+                <a
+                  href="#pricing"
+                  className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                >
+                  Pricing
+                </a>
+              </div>
 
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-6">
-            <Link
-              to="/login"
-              className="text-gray-700 hover:text-[#01434A] transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base"
-            >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              className="bg-[#01434A] text-white px-8 py-3 rounded-full hover:bg-teal-700 transition-all duration-300 font-['Poppins',_sans-serif] font-normal text-base shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Sign Up
-            </Link>
-          </div>
+              {/* Right Actions */}
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Link
+                  to="/login"
+                  className="hidden md:block text-gray-700 hover:text-[#01434A] transition-colors font-['Poppins',_sans-serif] text-sm px-2 sm:px-3 py-2"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-[#01434A] text-white px-3 sm:px-5 py-2 rounded-lg hover:bg-teal-700 transition-colors font-['Poppins',_sans-serif] text-xs sm:text-sm font-medium"
+                >
+                  Sign Up
+                </Link>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden">
-            <button className="text-gray-700 hover:text-[#01434A] transition-colors p-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </nav>
+                {/* Mobile Menu */}
+                <button className="lg:hidden p-2 text-gray-700 hover:text-[#01434A] transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </nav>
+        </div>
       </header>
 
       {/* Hero Section */}
       <main
         ref={heroRef}
-        className={`flex-1 flex items-center px-6 py-16 relative overflow-hidden transition-all duration-1000 ease-out ${
+        className={`flex-1 flex items-center px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 relative overflow-hidden transition-all duration-1000 ease-out ${
           isHeroVisible
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-8'
@@ -264,177 +263,128 @@ export default function WaitlistLandingPage() {
       >
 
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto relative z-10 w-full">
+          <div className="px-4 sm:px-6">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-            {/* Left Side - Text Content */}
-            <div className="space-y-8">
-              {/* Main Headline with Animation */}
-              <div className={`space-y-2 transition-all duration-1200 ease-out delay-200 ${
-                isHeroVisible
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-12'
-              }`}>
-                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-800 leading-tight tracking-tight font-['Playfair_Display',_serif]">
-                   <div className="text-gray-800">
-                     We detect and flag{' '}
-                     <span
-                       className="inline-block"
-                       style={{
-                         width: '13ch',
-                         textAlign: 'left',
-                         verticalAlign: 'baseline'
-                       }}
-                     >
+              {/* Left Side - Text Content */}
+              <div className="space-y-4 text-left">
+                {/* Main Headline with Animation */}
+                <div className={`space-y-2 transition-all duration-1200 ease-out delay-200 ${
+                  isHeroVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-12'
+                }`}>
+                   <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-gray-800 leading-tight tracking-tight font-['Playfair_Display',_serif]">
+                     <div className="text-gray-800">
+                       We detect and flag{' '}
                        <span
-                         key={animationKey}
-                         className={`transition-all duration-700 ease-out hover:scale-110 ${flaggingTechniques[currentTechnique].style}`}
+                         className="inline-block"
                          style={{
-                           animation: 'fadeInScale 0.7s ease-out'
+                           width: '13ch',
+                           textAlign: 'left',
+                           verticalAlign: 'baseline'
                          }}
                        >
-                         {flaggingTechniques[currentTechnique].display}
+                         <span
+                           key={animationKey}
+                           className={`transition-all duration-700 ease-out hover:scale-110 ${flaggingTechniques[currentTechnique].style}`}
+                           style={{
+                             animation: 'fadeInScale 0.7s ease-out'
+                           }}
+                         >
+                           {flaggingTechniques[currentTechnique].display}
+                         </span>
                        </span>
-                     </span>
-                   </div>
-                   <div className="text-gray-800">
-                     for your safety
-                   </div>
-                 </h1>
+                     </div>
+                     <div className="text-gray-800">
+                       for your safety
+                     </div>
+                   </h1>
+                </div>
+
+                {/* Add custom CSS for animation */}
+                <style jsx>{`
+                  @keyframes fadeInScale {
+                    0% {
+                      opacity: 0;
+                      transform: scale(0.8) translateY(10px);
+                    }
+                    50% {
+                      opacity: 0.7;
+                      transform: scale(1.05) translateY(-2px);
+                    }
+                    100% {
+                      opacity: 1;
+                      transform: scale(1) translateY(0);
+                    }
+                  }
+
+                  @keyframes float {
+                    0%, 100% {
+                      transform: translateY(0px) rotate(0deg);
+                    }
+                    25% {
+                      transform: translateY(-8px) rotate(1deg);
+                    }
+                    50% {
+                      transform: translateY(-12px) rotate(0deg);
+                    }
+                    75% {
+                      transform: translateY(-6px) rotate(-1deg);
+                    }
+                  }
+
+                  .animate-float {
+                    animation: float 3s ease-in-out infinite;
+                  }
+                `}</style>
+
+                {/* Description */}
+                <p className={`text-sm sm:text-base md:text-lg text-black leading-relaxed font-['Poppins',_sans-serif] font-normal max-w-2xl mx-0 transition-all duration-1200 ease-out delay-400 ${
+                  isHeroVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-12'
+                }`}>
+                  A smart browser extension that moderates inappropriate words
+                  in Filipino and English using real-time sentiment analysis.
+                </p>
+
+                {/* Hero Image - Mobile Only */}
+                <div className={`lg:hidden flex justify-center mt-8 transition-all duration-1200 ease-out delay-500 ${
+                  isHeroVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-12'
+                }`}>
+                  <div className="relative w-full max-w-xs sm:max-w-sm">
+                    <img src={HeroImg} alt="MURAI hero" className="w-full h-auto object-cover" />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 justify-start transition-all duration-1200 ease-out delay-600 ${
+                  isHeroVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-12'
+                }`}>
+                  <button className="group bg-[#01434A] text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-teal-700 transition-all duration-300 font-medium text-sm sm:text-base shadow-md hover:shadow-lg transform hover:scale-105 font-['Poppins',_sans-serif]">
+                    <span className="flex items-center justify-center">Download Extension</span>
+                  </button>
+                  <button className="group border-2 border-gray-400 text-gray-600 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full hover:border-[#001A1C] hover:bg-[#001A1C] hover:text-white transition-all duration-300 font-medium text-sm sm:text-base shadow-sm hover:shadow-md transform hover:scale-105 font-['Poppins',_sans-serif]">
+                    <span className="flex items-center justify-center">Watch Demo</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Add custom CSS for animation */}
-              <style jsx>{`
-                @keyframes fadeInScale {
-                  0% {
-                    opacity: 0;
-                    transform: scale(0.8) translateY(10px);
-                  }
-                  50% {
-                    opacity: 0.7;
-                    transform: scale(1.05) translateY(-2px);
-                  }
-                  100% {
-                    opacity: 1;
-                    transform: scale(1) translateY(0);
-                  }
-                }
-
-                @keyframes float {
-                  0%, 100% {
-                    transform: translateY(0px) rotate(0deg);
-                  }
-                  25% {
-                    transform: translateY(-8px) rotate(1deg);
-                  }
-                  50% {
-                    transform: translateY(-12px) rotate(0deg);
-                  }
-                  75% {
-                    transform: translateY(-6px) rotate(-1deg);
-                  }
-                }
-
-                .animate-float {
-                  animation: float 3s ease-in-out infinite;
-                }
-              `}</style>
-
-              {/* Description */}
-              <p className={`text-md md:text-lg text-black leading-relaxed font-['Poppins',_sans-serif] font-normal transition-all duration-1200 ease-out delay-400 ${
+              {/* Right Side - Image/Visual Section - Desktop Only */}
+              <div className={`hidden lg:flex justify-center lg:justify-end transition-all duration-1200 ease-out delay-300 ${
                 isHeroVisible
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-12'
               }`}>
-                A smart browser extension that moderates inappropriate words
-                in Filipino and English using real-time sentiment analysis.
-              </p>
-
-              {/* Action Buttons */}
-              <div className={`flex flex-col sm:flex-row gap-4 pt-8 transition-all duration-1200 ease-out delay-600 ${
-                isHeroVisible
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-12'
-              }`}>
-                <button className="group bg-[#01434A] text-white px-8 py-4 rounded-full hover:bg-teal-700 transition-all duration-300 font-medium text-lg shadow-md hover:shadow-lg transform hover:scale-105">
-                  <span className="flex items-center justify-center gap-2">
-                    Download Extension
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </span>
-                </button>
-                <button className="group border-2 border-[#01434A] text-[#01434A] px-8 py-4 rounded-full hover:border-teal-700 hover:bg-teal-50 transition-all duration-300 font-medium text-lg shadow-sm hover:shadow-md transform hover:scale-105">
-                  <span className="flex items-center justify-center gap-2">
-                    Watch Demo
-                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.5a1.5 1.5 0 011.5 1.5v1a1.5 1.5 0 01-1.5 1.5H9m0-5a1.5 1.5 0 011.5-1.5H12m-3 5h3m-3 0h.375a1.125 1.125 0 011.125 1.125V15H9V9.75A1.125 1.125 0 0110.125 8.625H12" />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Side - Image/Visual Section */}
-            <div className={`flex justify-center lg:justify-end transition-all duration-1200 ease-out delay-300 ${
-              isHeroVisible
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-12'
-            }`}>
-              <div className="relative">
-                {/* Main Browser Mockup */}
-                <div className="w-[500px] h-80 bg-gray-100 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-float">
-                  {/* Browser Header */}
-                  <div className="bg-gray-200 h-10 flex items-center px-6 gap-3">
-                    <div className="flex gap-2">
-                      <div className="w-4 h-4 bg-red-400 rounded-full"></div>
-                      <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
-                      <div className="w-4 h-4 bg-green-400 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 bg-white rounded-sm h-6 mx-6 flex items-center px-3">
-                      <div className="w-4 h-4 bg-gray-300 rounded-full mr-3"></div>
-                      <div className="text-sm text-gray-500">example.com</div>
-                    </div>
-                  </div>
-
-                  {/* Browser Content */}
-                  <div className="p-8 bg-white h-full">
-                    <div className="space-y-6">
-                      <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-5 bg-gray-200 rounded w-1/2"></div>
-                      <div className="relative h-12">
-                        <div className="h-5 bg-red-100 rounded w-2/3 relative">
-                          <div className="absolute -top-10 left-0 bg-[#01434A] text-white text-sm px-3 py-2 rounded shadow-lg whitespace-nowrap z-10">
-                            Inappropriate content detected
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-5 bg-gray-200 rounded w-5/6"></div>
-                      <div className="h-5 bg-gray-200 rounded w-4/5"></div>
-                      <div className="h-5 bg-gray-200 rounded w-2/3"></div>
-                    </div>
-                  </div>
+                <div className="relative w-full max-w-md lg:max-w-lg">
+                  <img src={HeroImg} alt="MURAI hero" className="w-full h-auto object-cover" />
                 </div>
-
-                {/* Floating MURAI Badge */}
-                <div className="absolute -bottom-4 -right-4 bg-[#01434A] text-white px-4 py-2 rounded-full shadow-lg">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium">MURAI Active</span>
-                  </div>
-                </div>
-
-                {/* Confetti-like Decorative Elements */}
-                <div className="absolute -top-6 -left-6 w-12 h-12 bg-teal-200 rounded-lg rotate-12 opacity-60 animate-pulse"></div>
-                <div className="absolute -bottom-8 -left-8 w-8 h-8 bg-[#01434A] rounded-full opacity-40"></div>
-                <div className="absolute -top-4 -right-8 w-10 h-10 bg-teal-400 rounded-lg -rotate-12 opacity-60"></div>
-                <div className="absolute top-16 -right-6 w-6 h-6 bg-teal-300 rounded-full opacity-50 animate-bounce"></div>
-                <div className="absolute -bottom-6 -right-4 w-14 h-8 bg-[#01434A] rounded-xl rotate-45 opacity-30"></div>
-                <div className="absolute top-32 -left-10 w-8 h-12 bg-teal-500 rounded-2xl -rotate-6 opacity-50"></div>
-                <div className="absolute bottom-16 right-8 w-6 h-6 bg-teal-200 rounded-lg rotate-45 opacity-70 animate-pulse"></div>
-                <div className="absolute top-8 left-12 w-4 h-4 bg-[#01434A] rounded-full opacity-60"></div>
-                <div className="absolute -bottom-12 right-16 w-10 h-6 bg-teal-400 rounded-full rotate-12 opacity-40"></div>
-                <div className="absolute top-48 -right-12 w-8 h-8 bg-teal-300 rounded-lg -rotate-45 opacity-50 animate-bounce"></div>
               </div>
             </div>
           </div>
@@ -639,19 +589,20 @@ export default function WaitlistLandingPage() {
             : 'opacity-0 translate-y-8'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className={`flex justify-between items-center mb-16 transition-all duration-1200 ease-out delay-200 ${
-            isHowItWorksVisible
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-12'
-          }`}>
-            <h2 className="text-4xl md:text-5xl font-black text-black font-['Playfair_Display',_serif]">
-              How it works
-            </h2>
-            <p className="text-lg text-gray-600 font-['Poppins',_sans-serif]">
-              Get started in just three simple steps
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="px-4 sm:px-6">
+            <div className={`text-center lg:flex lg:justify-between lg:items-center mb-12 lg:mb-16 transition-all duration-1200 ease-out delay-200 ${
+              isHowItWorksVisible
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-12'
+            }`}>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-black font-['Playfair_Display',_serif] mb-4 lg:mb-0">
+                How it works
+              </h2>
+              <p className="text-base lg:text-lg text-gray-600 font-['Poppins',_sans-serif] max-w-md mx-auto lg:mx-0">
+                Get started in just three simple steps
+              </p>
+            </div>
 
           <div className="space-y-12">
             {/* Video 1 - Install Extension */}
@@ -661,11 +612,11 @@ export default function WaitlistLandingPage() {
                 : 'opacity-0 translate-y-12'
             }`}>
               <div className={`transition-all duration-1000 ease-in-out ${
-                expandedVideo === 1 ? 'grid grid-cols-2 gap-12' : 'grid grid-cols-12 gap-8'
+                expandedVideo === 1 ? 'grid lg:grid-cols-2 gap-8 lg:gap-12' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8'
               } items-start`}>
                 {/* Video */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 1 ? 'col-span-1' : 'col-span-3'
+                  expandedVideo === 1 ? 'col-span-1' : 'col-span-1 lg:col-span-3'
                 }`}>
                   <div className={`relative w-full bg-gray-800 rounded-lg overflow-hidden transition-all duration-1000 ease-in-out origin-bottom ${
                     expandedVideo === 1 ? 'h-80' : 'h-32'
@@ -691,7 +642,7 @@ export default function WaitlistLandingPage() {
 
                 {/* Content */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 1 ? 'col-span-1 flex flex-col justify-center h-80' : 'col-span-9 grid grid-cols-9 gap-8 items-start'
+                  expandedVideo === 1 ? 'col-span-1 flex flex-col justify-center lg:h-80' : 'col-span-1 lg:col-span-9 grid grid-cols-1 lg:grid-cols-9 gap-4 lg:gap-8 items-start'
                 }`}>
                   {expandedVideo === 1 ? (
                     // Expanded content
@@ -705,15 +656,15 @@ export default function WaitlistLandingPage() {
                   ) : (
                     // Collapsed content
                     <>
-                      <div className="col-span-4">
+                      <div className="col-span-1 lg:col-span-4">
                         <div className="space-y-2">
                           <span className="text-lg text-gray-400 font-['Poppins',_sans-serif] transition-all duration-500">/01</span>
-                          <h3 className="text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Install Extension</h3>
+                          <h3 className="text-2xl lg:text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Install Extension</h3>
                         </div>
                       </div>
 
-                      <div className="col-span-5">
-                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500">
+                      <div className="col-span-1 lg:col-span-5">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500 text-sm lg:text-base">
                           Add MURAI directly from the browser store — quick, easy, and lightweight.
                         </p>
                       </div>
@@ -730,11 +681,11 @@ export default function WaitlistLandingPage() {
                 : 'opacity-0 translate-y-12'
             }`}>
               <div className={`transition-all duration-1000 ease-in-out ${
-                expandedVideo === 2 ? 'grid grid-cols-2 gap-12' : 'grid grid-cols-12 gap-8'
+                expandedVideo === 2 ? 'grid lg:grid-cols-2 gap-8 lg:gap-12' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8'
               } items-start`}>
                 {/* Video */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 2 ? 'col-span-1' : 'col-span-3'
+                  expandedVideo === 2 ? 'col-span-1' : 'col-span-1 lg:col-span-3'
                 }`}>
                   <div className={`relative w-full bg-gray-800 rounded-lg overflow-hidden transition-all duration-1000 ease-in-out origin-bottom ${
                     expandedVideo === 2 ? 'h-80' : 'h-32'
@@ -760,7 +711,7 @@ export default function WaitlistLandingPage() {
 
                 {/* Content */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 2 ? 'col-span-1 flex flex-col justify-center h-80' : 'col-span-9 grid grid-cols-9 gap-8 items-start'
+                  expandedVideo === 2 ? 'col-span-1 flex flex-col justify-center lg:h-80' : 'col-span-1 lg:col-span-9 grid grid-cols-1 lg:grid-cols-9 gap-4 lg:gap-8 items-start'
                 }`}>
                   {expandedVideo === 2 ? (
                     // Expanded content
@@ -774,15 +725,15 @@ export default function WaitlistLandingPage() {
                   ) : (
                     // Collapsed content
                     <>
-                      <div className="col-span-4">
+                      <div className="col-span-1 lg:col-span-4">
                         <div className="space-y-2">
                           <span className="text-lg text-gray-400 font-['Poppins',_sans-serif] transition-all duration-500">/02</span>
-                          <h3 className="text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Activate Protection</h3>
+                          <h3 className="text-2xl lg:text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Activate Protection</h3>
                         </div>
                       </div>
 
-                      <div className="col-span-5">
-                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500">
+                      <div className="col-span-1 lg:col-span-5">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500 text-sm lg:text-base">
                           Switch it on with a single click and let the smart filter take over.
                         </p>
                       </div>
@@ -799,11 +750,11 @@ export default function WaitlistLandingPage() {
                 : 'opacity-0 translate-y-12'
             }`}>
               <div className={`transition-all duration-1000 ease-in-out ${
-                expandedVideo === 3 ? 'grid grid-cols-2 gap-12' : 'grid grid-cols-12 gap-8'
+                expandedVideo === 3 ? 'grid lg:grid-cols-2 gap-8 lg:gap-12' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8'
               } items-start`}>
                 {/* Video */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 3 ? 'col-span-1' : 'col-span-3'
+                  expandedVideo === 3 ? 'col-span-1' : 'col-span-1 lg:col-span-3'
                 }`}>
                   <div className={`relative w-full bg-gray-800 rounded-lg overflow-hidden transition-all duration-1000 ease-in-out origin-bottom ${
                     expandedVideo === 3 ? 'h-80' : 'h-32'
@@ -829,7 +780,7 @@ export default function WaitlistLandingPage() {
 
                 {/* Content */}
                 <div className={`transition-all duration-1000 ease-in-out ${
-                  expandedVideo === 3 ? 'col-span-1 flex flex-col justify-center h-80' : 'col-span-9 grid grid-cols-9 gap-8 items-start'
+                  expandedVideo === 3 ? 'col-span-1 flex flex-col justify-center lg:h-80' : 'col-span-1 lg:col-span-9 grid grid-cols-1 lg:grid-cols-9 gap-4 lg:gap-8 items-start'
                 }`}>
                   {expandedVideo === 3 ? (
                     // Expanded content
@@ -843,15 +794,15 @@ export default function WaitlistLandingPage() {
                   ) : (
                     // Collapsed content
                     <>
-                      <div className="col-span-4">
+                      <div className="col-span-1 lg:col-span-4">
                         <div className="space-y-2">
                           <span className="text-lg text-gray-400 font-['Poppins',_sans-serif] transition-all duration-500">/03</span>
-                          <h3 className="text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Browse Safely</h3>
+                          <h3 className="text-2xl lg:text-3xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Browse Safely</h3>
                         </div>
                       </div>
 
-                      <div className="col-span-5">
-                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500">
+                      <div className="col-span-1 lg:col-span-5">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500 text-sm lg:text-base">
                           Enjoy real-time moderation of inappropriate words and toxic content in Filipino and English, so you can browse with confidence.
                         </p>
                       </div>
@@ -860,6 +811,7 @@ export default function WaitlistLandingPage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </section>
@@ -955,210 +907,221 @@ export default function WaitlistLandingPage() {
           <div className="border-b border-gray-200 mb-12"></div>
 
           {/* Main Content Section */}
-          <div className={`grid lg:grid-cols-2 gap-16 transition-all duration-1200 ease-out delay-400 ${
+          <div className={`grid lg:grid-cols-2 gap-8 lg:gap-16 transition-all duration-1200 ease-out delay-400 ${
             isFaqVisible
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-12'
           }`}>
-            {/* Left side - Description */}
-            <div className="border-r border-gray-200 pr-16">
-              <p className="text-lg text-gray-800 font-['Poppins',_sans-serif] leading-relaxed font-medium mb-48">
+            {/* Left side - FAQ Items (Scrollable) */}
+            <div className="lg:border-r border-gray-200 lg:pr-16">
+              <p className="text-lg text-gray-800 font-['Poppins',_sans-serif] leading-relaxed font-medium mb-8">
                 Everything you need to know about using MURAI — answered clearly and simply.
               </p>
 
-              {/* Question Form */}
-              <div className="mt-48">
-                <h4 className="text-lg font-semibold text-black mb-4 font-['Poppins',_sans-serif]">
+              <div className="h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-gray-50 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
+                <div className="space-y-0">
+                  {/* FAQ Item 1 - Expanded by default */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 1 ? null : 1)}
+                      className="w-full py-6 text-left flex justify-between items-start transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        Do I need to create an account?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 1 ? 'rotate-180' : ''
+                      }`}>
+                        −
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 1 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          No account is needed to start using the basic version. For premium features, you may create an account to manage your settings.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQ Item 2 */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 2 ? null : 2)}
+                      className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        Can I choose which websites to moderate?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 2 ? 'rotate-45' : ''
+                      }`}>
+                        +
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 2 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          Yes, you can customize which websites MURAI monitors and set different sensitivity levels for different types of content.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQ Item 3 */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 3 ? null : 3)}
+                      className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        Is MURAI free to use?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 3 ? 'rotate-45' : ''
+                      }`}>
+                        +
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 3 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          MURAI offers a free version with basic content filtering. Premium features are available with advanced customization options.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQ Item 4 */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 4 ? null : 4)}
+                      className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        What browsers are supported?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 4 ? 'rotate-45' : ''
+                      }`}>
+                        +
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 4 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          MURAI supports Chrome, Firefox, Edge, and Safari browsers with full functionality across all platforms.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQ Item 5 */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 5 ? null : 5)}
+                      className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        How accurate is the content detection?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 5 ? 'rotate-45' : ''
+                      }`}>
+                        +
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 5 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          Our AI-powered detection system achieves over 95% accuracy in identifying inappropriate content in both Filipino and English.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQ Item 6 */}
+                  <div className="border-b border-gray-200">
+                    <button
+                      onClick={() => setExpandedFAQ(expandedFAQ === 6 ? null : 6)}
+                      className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
+                    >
+                      <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
+                        Does MURAI slow down my browser?
+                      </span>
+                      <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
+                        expandedFAQ === 6 ? 'rotate-45' : ''
+                      }`}>
+                        +
+                      </span>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      expandedFAQ === 6 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="pb-6 px-0">
+                        <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
+                          No, MURAI is designed to be lightweight and efficient, with minimal impact on your browser's performance.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Contact Form */}
+            <div className="pl-0">
+              <div className="sticky top-8">
+                <h4 className="text-2xl font-bold text-black mb-6 font-['Playfair_Display',_serif]">
                   Still have questions?
                 </h4>
-                <form onSubmit={handleQuestionSubmit} className="space-y-4">
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="Your email address"
-                    required
-                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                  />
-                  <input
-                    type="text"
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    placeholder="Your question"
-                    required
-                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-                  />
+                <p className="text-gray-600 font-['Poppins',_sans-serif] mb-8 leading-relaxed">
+                  Can't find the answer you're looking for? Send us a message and we'll get back to you.
+                </p>
+
+                <form onSubmit={handleQuestionSubmit} className="space-y-6">
+                  <div>
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="Your email address"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01434A] focus:border-transparent outline-none font-['Poppins',_sans-serif] text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={questionInput}
+                      onChange={(e) => setQuestionInput(e.target.value)}
+                      placeholder="Your question"
+                      rows="4"
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#01434A] focus:border-transparent outline-none resize-none font-['Poppins',_sans-serif] text-sm"
+                    ></textarea>
+                  </div>
+
                   <button
                     type="submit"
-                    className="w-full px-6 py-3 bg-teal-800 text-white rounded-md hover:bg-teal-900 transition-colors font-medium"
+                    className="w-full bg-[#01434A] text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium font-['Poppins',_sans-serif] text-sm"
                   >
                     Send Question
                   </button>
                 </form>
               </div>
             </div>
-
-            {/* Right side - FAQ Items (Scrollable) */}
-            <div className="h-[500px] p-5 overflow-y-auto pl-0 scrollbar-thin scrollbar-track-gray-50 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
-              <div className="space-y-0">
-                {/* FAQ Item 1 - Expanded by default */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 1 ? null : 1)}
-                    className="w-full py-6 text-left flex justify-between items-start transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      Do I need to create an account?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 1 ? 'rotate-180' : ''
-                    }`}>
-                      −
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 1 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        No account is needed to start using the basic version. For premium features, you may create an account to manage your settings.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* FAQ Item 2 */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 2 ? null : 2)}
-                    className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      Can I choose which websites to moderate?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 2 ? 'rotate-45' : ''
-                    }`}>
-                      +
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 2 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        Yes, you can customize which websites MURAI monitors and set different sensitivity levels for different types of content.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* FAQ Item 3 */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 3 ? null : 3)}
-                    className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      Is MURAI free to use?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 3 ? 'rotate-45' : ''
-                    }`}>
-                      +
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 3 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        MURAI offers a free version with basic content filtering. Premium features are available with advanced customization options.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* FAQ Item 4 */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 4 ? null : 4)}
-                    className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      Is MURAI free to use?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 4 ? 'rotate-45' : ''
-                    }`}>
-                      +
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 4 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        Yes, MURAI is completely free to use with all core features available at no cost. We believe in making the internet safer for everyone.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Additional FAQ items for scrolling */}
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 5 ? null : 5)}
-                    className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      What browsers are supported?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 5 ? 'rotate-45' : ''
-                    }`}>
-                      +
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 5 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        MURAI supports Chrome, Firefox, Edge, and Safari browsers with full functionality across all platforms.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === 6 ? null : 6)}
-                    className="w-full py-6 text-left flex justify-between items-center transition-colors duration-200 hover:bg-gray-50"
-                  >
-                    <span className="font-medium text-black font-['Poppins',_sans-serif] text-lg pr-4">
-                      How accurate is the content detection?
-                    </span>
-                    <span className={`text-gray-400 text-2xl font-light flex-shrink-0 transition-transform duration-300 ${
-                      expandedFAQ === 6 ? 'rotate-45' : ''
-                    }`}>
-                      +
-                    </span>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    expandedFAQ === 6 ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="pb-6 px-0">
-                      <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                        Our AI-powered detection system achieves over 95% accuracy in identifying inappropriate content in both Filipino and English.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-
 
         </div>
       </section>
@@ -1175,7 +1138,7 @@ export default function WaitlistLandingPage() {
       >
         <div className="max-w-6xl mx-auto px-6">
           {/* Top Section - Title and Description */}
-          <div className={`flex justify-between items-start mb-12 transition-all duration-1200 ease-out delay-200 ${
+          <div className={`flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 lg:gap-0 mb-12 transition-all duration-1200 ease-out delay-200 ${
             isTestimonialsVisible
               ? 'opacity-100 translate-y-0'
               : 'opacity-0 translate-y-12'
@@ -1185,7 +1148,7 @@ export default function WaitlistLandingPage() {
                 / Testimonials
               </h2>
             </div>
-            <div className="max-w-md">
+            <div className="max-w-md lg:max-w-md">
               <p className="text-xl text-white font-['Poppins',_sans-serif]">
                 Trusted by parents, learners, and everyday users
               </p>
