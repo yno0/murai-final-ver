@@ -222,8 +222,8 @@ export default function AddWords() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiPlus className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiPlus className="h-5 w-5 text-[#015763]" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 mb-1">Add Words</h1>
@@ -243,7 +243,7 @@ export default function AddWords() {
               onClick={() => setActiveTab('single')}
               className={`py-4 px-4 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'single'
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-[#015763] text-[#015763]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -254,7 +254,7 @@ export default function AddWords() {
               onClick={() => setActiveTab('bulk')}
               className={`py-4 px-4 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'bulk'
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-[#015763] text-[#015763]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -279,7 +279,7 @@ export default function AddWords() {
                     name="word"
                     value={formData.word}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                     placeholder="Enter word or phrase"
                     required
                   />
@@ -295,7 +295,7 @@ export default function AddWords() {
                     name="language"
                     value={formData.language}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
                     required
                   >
                     <option value="English">English</option>
@@ -313,7 +313,7 @@ export default function AddWords() {
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
                     required
                   >
                     <option value="profanity">Profanity</option>
@@ -337,7 +337,7 @@ export default function AddWords() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Provide context or explanation for this word..."
                 />
               </div>
@@ -353,7 +353,7 @@ export default function AddWords() {
                   name="synonyms"
                   value={formData.synonyms}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Comma-separated list of related words"
                 />
               </div>
@@ -369,7 +369,7 @@ export default function AddWords() {
                   name="variations"
                   value={formData.variations}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Common misspellings or variations"
                 />
               </div>
@@ -379,7 +379,7 @@ export default function AddWords() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -422,7 +422,7 @@ export default function AddWords() {
                       value="text"
                       checked={uploadMethod === 'text'}
                       onChange={(e) => setUploadMethod(e.target.value)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-[#015763] focus:ring-[#015763]/20"
                     />
                     <FiFileText className="h-4 w-4 text-gray-600" />
                     <span className="text-sm text-gray-700">Text Input</span>
@@ -434,7 +434,7 @@ export default function AddWords() {
                       value="file"
                       checked={uploadMethod === 'file'}
                       onChange={(e) => setUploadMethod(e.target.value)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-[#015763] focus:ring-[#015763]/20"
                     />
                     <FiFile className="h-4 w-4 text-gray-600" />
                     <span className="text-sm text-gray-700">File Upload (CSV, XLSX, TXT)</span>
@@ -442,14 +442,14 @@ export default function AddWords() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <div className="bg-[#015763]/10 border border-[#015763]/20 rounded-md p-4">
                 <div className="flex items-start gap-3">
-                  <FiAlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <FiAlertCircle className="h-5 w-5 text-[#015763] mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-medium text-blue-800 mb-2">Import Format Instructions</h3>
-                    <div className="text-sm text-blue-700 space-y-2">
+                    <h3 className="text-sm font-medium text-[#015763] mb-2">Import Format Instructions</h3>
+                    <div className="text-sm text-[#015763]/80 space-y-2">
                       <p><strong>Text Input:</strong> Enter one word per line. Optional format:</p>
-                      <div className="bg-blue-100 border border-blue-200 rounded px-3 py-2 font-mono text-xs">
+                      <div className="bg-[#015763]/20 border border-[#015763]/30 rounded px-3 py-2 font-mono text-xs">
                         word|language|category
                       </div>
                       <p><strong>CSV File Format:</strong></p>
@@ -458,7 +458,7 @@ export default function AddWords() {
                         <li><strong>Data rows:</strong> One word per row with properties</li>
                         <li><strong>Separators:</strong> Comma or tab separated values</li>
                       </ul>
-                      <p>Example: <code className="bg-blue-100 px-1 py-0.5 rounded text-xs">badword,English,profanity</code></p>
+                      <p>Example: <code className="bg-[#015763]/20 px-1 py-0.5 rounded text-xs">badword,English,profanity</code></p>
                       <p>If language/category are not specified, defaults will be used (English, profanity).</p>
                     </div>
                   </div>
@@ -476,7 +476,7 @@ export default function AddWords() {
                     value={bulkText}
                     onChange={(e) => setBulkText(e.target.value)}
                     rows={12}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] font-mono text-sm"
                     placeholder="Enter words here, one per line...&#10;&#10;Examples:&#10;badword&#10;inappropriate|filipino|profanity|high&#10;spam|english|spam|medium"
                     required
                   />
@@ -505,7 +505,7 @@ export default function AddWords() {
                       <div className="flex flex-col items-center gap-2">
                         <FiUpload className="h-8 w-8 text-gray-400" />
                         <div className="text-sm text-gray-600">
-                          <span className="font-medium text-blue-600 hover:text-blue-500">Click to upload</span> or drag and drop
+                          <span className="font-medium text-[#015763] hover:text-[#015763]/80">Click to upload</span> or drag and drop
                         </div>
                         <p className="text-xs text-gray-500">CSV files only</p>
                       </div>
@@ -541,7 +541,7 @@ export default function AddWords() {
                 <button
                   type="submit"
                   disabled={isSubmitting || (uploadMethod === 'text' && !bulkText.trim()) || (uploadMethod === 'file' && !selectedFile)}
-                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-6 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

@@ -13,7 +13,8 @@ import {
   FiAlertCircle,
   FiRefreshCw,
   FiSearch,
-  FiFilter
+  FiFilter,
+  FiDownload
 } from 'react-icons/fi';
 import adminApiService from '../../services/adminApi.js';
 
@@ -25,9 +26,12 @@ export default function RolePermissions() {
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const [tempPermissions, setTempPermissions] = useState([]);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+
+  const itemsPerPage = 10;
 
   // Available permissions with descriptions
   const availablePermissions = [
@@ -191,7 +195,7 @@ export default function RolePermissions() {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'super_admin': return 'bg-purple-50 text-purple-700 border border-purple-200';
-      case 'admin': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      case 'admin': return 'bg-[#015763]/10 text-[#015763] border border-[#015763]/20';
       default: return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
   };
@@ -207,6 +211,22 @@ export default function RolePermissions() {
     return matchesSearch && matchesRole;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAdmins.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAdmins = filteredAdmins.slice(startIndex, endIndex);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter]);
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   // Handle edit permissions
   const handleEditPermissions = (admin) => {
     setSelectedAdmin(admin);
@@ -219,8 +239,8 @@ export default function RolePermissions() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiKey className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiKey className="h-5 w-5 text-[#015763]" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 mb-1">Role & Permission Settings</h1>
@@ -237,6 +257,13 @@ export default function RolePermissions() {
             >
               <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
+            </button>
+            <button
+              onClick={() => {/* TODO: Implement export */}}
+              className="px-4 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 transition-colors flex items-center gap-2"
+            >
+              <FiDownload className="h-4 w-4" />
+              Export
             </button>
           </div>
         </div>
@@ -261,8 +288,8 @@ export default function RolePermissions() {
         {Object.entries(permissionsByCategory).map(([category, permissions]) => (
           <div key={category} className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <FiShield className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-[#015763]/10 rounded-lg">
+                <FiShield className="h-5 w-5 text-[#015763]" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
             </div>
@@ -288,7 +315,7 @@ export default function RolePermissions() {
               placeholder="Search administrators by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -296,12 +323,24 @@ export default function RolePermissions() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Roles</option>
               <option value="super_admin">Super Admin</option>
               <option value="admin">Admin</option>
             </select>
+            {(searchTerm || roleFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setRoleFilter('all');
+                }}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-[#015763] hover:bg-[#015763]/10 rounded-md transition-colors flex items-center gap-1"
+              >
+                <FiX className="h-4 w-4" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -334,12 +373,12 @@ export default function RolePermissions() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading administrators...
                     </div>
                   </td>
                 </tr>
-              ) : filteredAdmins.length === 0 ? (
+              ) : paginatedAdmins.length === 0 ? (
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
                     {searchTerm || roleFilter !== 'all'
@@ -349,12 +388,12 @@ export default function RolePermissions() {
                   </td>
                 </tr>
               ) : (
-                filteredAdmins.map((admin) => (
+                paginatedAdmins.map((admin) => (
                   <tr key={admin._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-700">
+                        <div className="h-8 w-8 rounded-full bg-[#015763]/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-[#015763]">
                             {admin.name?.charAt(0)?.toUpperCase() || 'A'}
                           </span>
                         </div>
@@ -395,7 +434,7 @@ export default function RolePermissions() {
                       <div className="flex items-center gap-2 justify-end">
                         <button
                           onClick={() => handleEditPermissions(admin)}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          className="p-2 text-gray-400 hover:text-[#015763] hover:bg-[#015763]/10 rounded-md transition-colors"
                           title="Edit Permissions"
                         >
                           <FiEdit className="h-4 w-4" />
@@ -409,6 +448,64 @@ export default function RolePermissions() {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bg-white border border-gray-200 rounded-lg px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredAdmins.length)} of {filteredAdmins.length} administrators
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 text-sm border rounded-md transition-colors ${
+                          currentPage === page
+                            ? 'bg-[#015763] text-white border-[#015763]'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

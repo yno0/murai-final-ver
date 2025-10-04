@@ -107,8 +107,8 @@ export default function CustomLists() {
         </div>
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FiUsers className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiUsers className="h-6 w-6 text-[#015763]" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Public Lists</p>
@@ -177,7 +177,7 @@ export default function CustomLists() {
                 <div className="flex gap-2 ml-4">
                   <button
                     onClick={() => setSelectedList(list)}
-                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                    className="text-[#015763] hover:text-[#015763]/80 transition-colors"
                   >
                     <FiEdit className="h-4 w-4" />
                   </button>

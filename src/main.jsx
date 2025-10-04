@@ -37,6 +37,7 @@ import ModerationRules from './admin/pages/moderation/ModerationRules.jsx'
 import SentimentTrends from './admin/pages/analytics/SentimentTrends.jsx'
 import OffensiveWordFrequency from './admin/pages/analytics/OffensiveWordFrequency.jsx'
 import WebsiteReports from './admin/pages/analytics/WebsiteReports.jsx'
+import LanguageAnalytics from './admin/pages/analytics/LanguageAnalytics.jsx'
 import ExportReports from './admin/pages/analytics/ExportReports.jsx'
 import MasterWordList from './admin/pages/dictionary/MasterWordList.jsx'
 import AddEditWords from './admin/pages/dictionary/AddEditWords.jsx'
@@ -130,6 +131,7 @@ const router = createBrowserRouter([
       { path: 'analytics/sentiment-trends', element: <SentimentTrends /> },
       { path: 'analytics/word-frequency', element: <OffensiveWordFrequency /> },
       { path: 'analytics/website-reports', element: <WebsiteReports /> },
+      { path: 'analytics/language-analytics', element: <LanguageAnalytics /> },
       { path: 'analytics/export-reports', element: <ExportReports /> },
 
       // Dictionary Management

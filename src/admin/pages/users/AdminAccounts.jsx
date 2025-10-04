@@ -20,7 +20,8 @@ import {
   FiMail,
   FiCalendar,
   FiActivity,
-  FiX
+  FiX,
+  FiDownload
 } from 'react-icons/fi';
 import adminApi from '../../services/adminApi.js';
 import { CreateAdminModal, EditAdminModal, ChangePasswordModal } from '../../components/AdminModals.jsx';
@@ -306,7 +307,7 @@ export default function AdminAccounts() {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'super_admin': return 'bg-purple-50 text-purple-700 border border-purple-200';
-      case 'admin': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      case 'admin': return 'bg-[#015763]/10 text-[#015763] border border-[#015763]/20';
       default: return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
   };
@@ -328,8 +329,8 @@ export default function AdminAccounts() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiShield className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiShield className="h-5 w-5 text-[#015763]" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 mb-1">Admin Accounts</h1>
@@ -340,8 +341,23 @@ export default function AdminAccounts() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => fetchAdmins(currentPage, searchTerm, statusFilter, roleFilter)}
+              disabled={loading}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button
+              onClick={() => {/* TODO: Implement export */}}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiDownload className="h-4 w-4" />
+              Export
+            </button>
+            <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 transition-colors flex items-center gap-2"
             >
               <FiPlus className="h-4 w-4" />
               Add Admin
@@ -375,7 +391,7 @@ export default function AdminAccounts() {
               placeholder="Search admins by name, email, or department..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
 
@@ -385,7 +401,7 @@ export default function AdminAccounts() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -395,12 +411,25 @@ export default function AdminAccounts() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Roles</option>
               <option value="super_admin">Super Admin</option>
               <option value="admin">Admin</option>
             </select>
+            {(searchTerm || statusFilter !== 'all' || roleFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setRoleFilter('all');
+                }}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-[#015763] hover:bg-[#015763]/10 rounded-md transition-colors flex items-center gap-1"
+              >
+                <FiX className="h-4 w-4" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -433,7 +462,7 @@ export default function AdminAccounts() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading administrators...
                     </div>
                   </td>
@@ -452,8 +481,8 @@ export default function AdminAccounts() {
                   <tr key={admin._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-700">
+                        <div className="h-8 w-8 rounded-full bg-[#015763]/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-[#015763]">
                             {admin.name?.charAt(0)?.toUpperCase() || 'A'}
                           </span>
                         </div>
@@ -491,7 +520,7 @@ export default function AdminAccounts() {
 
                         <button
                           onClick={() => openPasswordModal(admin)}
-                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          className="p-2 text-gray-400 hover:text-[#015763] hover:bg-[#015763]/10 rounded-md transition-colors"
                           title="Change Password"
                         >
                           <FiLock className="h-4 w-4" />
@@ -544,7 +573,7 @@ export default function AdminAccounts() {
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-2 text-sm border rounded-md transition-colors ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white border-blue-600'
+                            ? 'bg-[#015763] text-white border-[#015763]'
                             : 'border-gray-300 hover:bg-gray-50'
                         }`}
                       >

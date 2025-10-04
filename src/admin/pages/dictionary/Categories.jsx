@@ -154,7 +154,7 @@ export default function Categories() {
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
 
@@ -164,7 +164,7 @@ export default function Categories() {
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Severities</option>
               <option value="low">Low</option>
@@ -180,8 +180,8 @@ export default function Categories() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiTag className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiTag className="h-5 w-5 text-[#015763]" />
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Categories</p>
@@ -237,7 +237,7 @@ export default function Categories() {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
                   {category.isDefault && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#015763]/10 text-[#015763] border border-[#015763]/20 mt-1">
                       Default
                     </span>
                   )}
@@ -296,7 +296,7 @@ export default function Categories() {
           {(!searchTerm && severityFilter === 'all') && (
             <button
               onClick={() => setShowAddForm(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 transition-colors"
             >
               Add Category
             </button>
@@ -333,7 +333,7 @@ export default function Categories() {
                   type="text"
                   value={newCategory.name}
                   onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Enter category name"
                   required
                 />
@@ -346,7 +346,7 @@ export default function Categories() {
                 <textarea
                   value={newCategory.description}
                   onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Enter description"
                   rows={3}
                 />
@@ -371,7 +371,7 @@ export default function Categories() {
                   <select
                     value={newCategory.severity}
                     onChange={(e) => setNewCategory({...newCategory, severity: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -395,7 +395,7 @@ export default function Categories() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#015763] border border-transparent rounded-md hover:bg-[#015763]/90 transition-colors flex items-center gap-2"
                 >
                   <FiSave className="h-4 w-4" />
                   {editingCategory ? 'Save Changes' : 'Add Category'}

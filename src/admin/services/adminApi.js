@@ -538,6 +538,35 @@ class AdminApiService {
     const endpoint = queryString ? `/integrations/usage-stats/top-performers?${queryString}` : '/integrations/usage-stats/top-performers';
     return this.request(endpoint);
   }
+
+  // Analytics API methods
+  async getSentimentTrends(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/analytics/sentiment-trends?${queryString}` : '/analytics/sentiment-trends';
+    return this.request(endpoint);
+  }
+
+  async getWordFrequency(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/analytics/word-frequency?${queryString}` : '/analytics/word-frequency';
+    return this.request(endpoint);
+  }
+
+  async getWebsiteAnalytics(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/analytics/website-analytics?${queryString}` : '/analytics/website-analytics';
+    return this.request(endpoint);
+  }
+
+  async getLanguageAnalytics(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/analytics/language-analytics?${queryString}` : '/analytics/language-analytics';
+    return this.request(endpoint);
+  }
+
+  async getFlaggedContentKPIs() {
+    return this.request('/analytics/flagged-content-kpis');
+  }
 }
 
 // Create and export a singleton instance

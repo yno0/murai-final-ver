@@ -161,7 +161,7 @@ export default function MasterWordList() {
               placeholder="Search words, categories, or languages..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function MasterWordList() {
             <select
               value={languageFilter}
               onChange={(e) => setLanguageFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Languages</option>
               <option value="english">English</option>
@@ -221,7 +221,7 @@ export default function MasterWordList() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={4}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading words...
                     </div>
                   </td>
@@ -239,7 +239,7 @@ export default function MasterWordList() {
                       {w.word}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#015763]/10 text-[#015763] border border-[#015763]/20">
                         {w.language}
                       </span>
                     </td>
@@ -300,7 +300,7 @@ export default function MasterWordList() {
                   type="text"
                   value={form.word}
                   onChange={(e) => setForm({ ...form, word: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="Enter word or phrase"
                   required
                   disabled={saving}
@@ -315,7 +315,7 @@ export default function MasterWordList() {
                   <select
                     value={form.language}
                     onChange={(e) => setForm({ ...form, language: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
                     required
                     disabled={saving}
                   >
@@ -330,7 +330,7 @@ export default function MasterWordList() {
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
                     required
                     disabled={saving}
                   >
@@ -351,7 +351,7 @@ export default function MasterWordList() {
                   type="text"
                   value={form.variations}
                   onChange={(e) => setForm({ ...form, variations: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
                   placeholder="e.g. variant1, variant2, variant3"
                   disabled={saving}
                 />
@@ -372,7 +372,7 @@ export default function MasterWordList() {
                 <button
                   type="submit"
                   disabled={saving || !form.word.trim()}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#015763] border border-transparent rounded-md hover:bg-[#015763]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {saving ? (
                     <div className="flex items-center gap-2">

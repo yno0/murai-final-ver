@@ -151,7 +151,8 @@ export default function AdminSidebar() {
       items: [
         { label: 'Sentiment Trends', href: '/admin/analytics/sentiment-trends', icon: <FiTrendingUp /> },
         { label: 'Word Frequency', href: '/admin/analytics/word-frequency', icon: <FiPieChart /> },
-        { label: 'Website Reports', href: '/admin/analytics/website-reports', icon: <FiGlobe /> },
+        { label: 'Web Analytics', href: '/admin/analytics/website-reports', icon: <FiGlobe /> },
+        { label: 'Language Analytics', href: '/admin/analytics/language-analytics', icon: <FiGlobe /> },
         { label: 'Export Reports', href: '/admin/analytics/export-reports', icon: <FiDownload /> },
       ]
     },

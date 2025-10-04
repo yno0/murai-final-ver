@@ -155,7 +155,7 @@ export default function SynonymsVariations() {
               placeholder="Search word groups..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
 
@@ -165,7 +165,7 @@ export default function SynonymsVariations() {
             <select
               value={languageFilter}
               onChange={(e) => setLanguageFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Languages</option>
               <option value="english">English</option>
@@ -174,7 +174,7 @@ export default function SynonymsVariations() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Categories</option>
               <option value="profanity">Profanity</option>
@@ -231,7 +231,7 @@ export default function SynonymsVariations() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading word groups...
                     </div>
                   </td>
@@ -252,7 +252,7 @@ export default function SynonymsVariations() {
                       {group.mainWord}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#015763]/10 text-[#015763] border border-[#015763]/20">
                         {group.language}
                       </span>
                     </td>
@@ -337,7 +337,7 @@ export default function SynonymsVariations() {
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-2 text-sm border rounded-md transition-colors ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white border-blue-600'
+                            ? 'bg-[#015763] text-white border-[#015763]'
                             : 'border-gray-300 hover:bg-gray-50'
                         }`}
                       >

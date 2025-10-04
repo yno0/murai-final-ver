@@ -136,8 +136,8 @@ export default function ImportExport() {
       {/* Export Section */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <FiDownload className="h-5 w-5 text-blue-600" />
+          <div className="p-2 bg-[#015763]/10 rounded-lg">
+            <FiDownload className="h-5 w-5 text-[#015763]" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Export Dictionary</h3>
@@ -151,7 +151,7 @@ export default function ImportExport() {
             <select
               value={exportFilters.language}
               onChange={(e) => setExportFilters({...exportFilters, language: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="">All Languages</option>
               <option value="English">English</option>
@@ -163,7 +163,7 @@ export default function ImportExport() {
             <select
               value={exportFilters.category}
               onChange={(e) => setExportFilters({...exportFilters, category: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="">All Categories</option>
               <option value="profanity">Profanity</option>
@@ -177,7 +177,7 @@ export default function ImportExport() {
             <button
               onClick={handleExport}
               disabled={isLoading}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+              className="w-full px-4 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
             >
               {isLoading ? (
                 <>
@@ -214,7 +214,7 @@ export default function ImportExport() {
                 type="checkbox"
                 checked={importOptions.overwriteExisting}
                 onChange={(e) => setImportOptions({...importOptions, overwriteExisting: e.target.checked})}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-gray-300 text-[#015763] focus:ring-[#015763]/20"
               />
               <span className="text-sm text-gray-700">Overwrite existing words</span>
             </label>
@@ -223,7 +223,7 @@ export default function ImportExport() {
                 type="checkbox"
                 checked={importOptions.skipInvalid}
                 onChange={(e) => setImportOptions({...importOptions, skipInvalid: e.target.checked})}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-gray-300 text-[#015763] focus:ring-[#015763]/20"
               />
               <span className="text-sm text-gray-700">Skip invalid entries</span>
             </label>
@@ -252,14 +252,14 @@ export default function ImportExport() {
 
         {/* Progress and Status */}
         {(progress.total > 0 && isLoading) && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <div className="flex justify-between text-sm text-blue-700 mb-2">
+          <div className="mt-4 p-4 bg-[#015763]/10 border border-[#015763]/20 rounded-md">
+            <div className="flex justify-between text-sm text-[#015763] mb-2">
               <span>Processing import...</span>
               <span>{progress.done}/{progress.total}</span>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-2">
+            <div className="w-full bg-[#015763]/20 rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-[#015763] h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.done / progress.total) * 100}%` }}
               ></div>
             </div>
@@ -278,8 +278,8 @@ export default function ImportExport() {
                 <span className="text-gray-700">Imported: <span className="font-medium">{importResults.imported}</span></span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="p-1 bg-blue-100 rounded">
-                  <FiCheck className="h-3 w-3 text-blue-600" />
+                <div className="p-1 bg-[#015763]/10 rounded">
+                  <FiCheck className="h-3 w-3 text-[#015763]" />
                 </div>
                 <span className="text-gray-700">Updated: <span className="font-medium">{importResults.updated}</span></span>
               </div>
@@ -339,7 +339,7 @@ export default function ImportExport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search words..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function ImportExport() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={3}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading words...
                     </div>
                   </td>
@@ -374,7 +374,7 @@ export default function ImportExport() {
                   <tr key={w._id || w.id || `${w.word}-${w.language}`} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{w.word}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#015763]/10 text-[#015763] border border-[#015763]/20">
                         {w.language}
                       </span>
                     </td>

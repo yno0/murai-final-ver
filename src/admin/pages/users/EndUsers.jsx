@@ -14,7 +14,9 @@ import {
   FiUserCheck,
   FiUserX,
   FiClock,
-  FiAlertCircle
+  FiAlertCircle,
+  FiDownload,
+  FiX
 } from 'react-icons/fi';
 import adminApi from '../../services/adminApi.js';
 
@@ -24,6 +26,7 @@ export default function EndUsers() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -103,7 +106,7 @@ export default function EndUsers() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, dateFilter]);
 
   // Handle page change
   const handlePageChange = (page) => {
@@ -200,8 +203,8 @@ export default function EndUsers() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiUsers className="h-5 w-5 text-blue-600" />
+            <div className="p-2 bg-[#015763]/10 rounded-lg">
+              <FiUsers className="h-5 w-5 text-[#015763]" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 mb-1">End Users</h1>
@@ -218,6 +221,13 @@ export default function EndUsers() {
             >
               <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
+            </button>
+            <button
+              onClick={() => {/* TODO: Implement export */}}
+              className="px-4 py-2 bg-[#015763] text-white rounded-md hover:bg-[#015763]/90 transition-colors flex items-center gap-2"
+            >
+              <FiDownload className="h-4 w-4" />
+              Export
             </button>
           </div>
         </div>
@@ -248,7 +258,7 @@ export default function EndUsers() {
               placeholder="Search users by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm"
             />
           </div>
 
@@ -258,7 +268,7 @@ export default function EndUsers() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -266,6 +276,30 @@ export default function EndUsers() {
               <option value="suspended">Suspended</option>
               <option value="revoked">Revoked</option>
             </select>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763]/20 focus:border-[#015763] text-sm bg-white"
+            >
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+            </select>
+            {(searchTerm || statusFilter !== 'all' || dateFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setDateFilter('all');
+                }}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-[#015763] hover:bg-[#015763]/10 rounded-md transition-colors flex items-center gap-1"
+              >
+                <FiX className="h-4 w-4" />
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -298,7 +332,7 @@ export default function EndUsers() {
                 <tr>
                   <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
                     <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#015763]"></div>
                       Loading users...
                     </div>
                   </td>
@@ -317,8 +351,8 @@ export default function EndUsers() {
                   <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-700">
+                        <div className="h-8 w-8 rounded-full bg-[#015763]/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-[#015763]">
                             {user.name?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
                         </div>
@@ -417,7 +451,7 @@ export default function EndUsers() {
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-2 text-sm border rounded-md transition-colors ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white border-blue-600'
+                            ? 'bg-[#015763] text-white border-[#015763]'
                             : 'border-gray-300 hover:bg-gray-50'
                         }`}
                       >
@@ -462,8 +496,8 @@ export default function EndUsers() {
 
             <div className="px-6 py-4 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-xl font-medium text-blue-700">
+                <div className="h-16 w-16 rounded-full bg-[#015763]/10 flex items-center justify-center">
+                  <span className="text-xl font-medium text-[#015763]">
                     {selectedUser.name?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>

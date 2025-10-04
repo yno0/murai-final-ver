@@ -15,6 +15,7 @@ import ModerationRules from './pages/moderation/ModerationRules.jsx'
 import SentimentTrends from './pages/analytics/SentimentTrends.jsx'
 import OffensiveWordFrequency from './pages/analytics/OffensiveWordFrequency.jsx'
 import WebsiteReports from './pages/analytics/WebsiteReports.jsx'
+import LanguageAnalytics from './pages/analytics/LanguageAnalytics.jsx'
 import ExportReports from './pages/analytics/ExportReports.jsx'
 
 // Dictionary Management Pages
@@ -95,6 +96,7 @@ const router = createBrowserRouter([
       { path: 'analytics/sentiment-trends', element: <SentimentTrends /> },
       { path: 'analytics/word-frequency', element: <OffensiveWordFrequency /> },
       { path: 'analytics/website-reports', element: <WebsiteReports /> },
+      { path: 'analytics/language-analytics', element: <LanguageAnalytics /> },
       { path: 'analytics/export-reports', element: <ExportReports /> },
 
       // Dictionary Management

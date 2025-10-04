@@ -38,6 +38,7 @@ import adminDictionaryRoutes from "../routes/adminDictionary.js";
 import adminUsersRoutes from "../routes/adminUsers.js";
 import adminReportsRoutes from "../routes/adminReports.js";
 import adminIntegrationsRoutes from "../routes/adminIntegrations.js";
+import adminAnalyticsRoutes from "../routes/adminAnalytics.js";
 
 export function createApp() {
     const app = express();
@@ -181,6 +182,7 @@ export function createApp() {
     app.use('/api/admin/dictionary', adminDictionaryRoutes);
     app.use('/api/admin/reports', adminReportsRoutes);
     app.use('/api/admin/integrations', adminIntegrationsRoutes);
+    app.use('/api/admin/analytics', adminAnalyticsRoutes);
     // User management routes - must be last among admin routes to avoid conflicts
     app.use('/api/admin', adminUsersRoutes);
 
