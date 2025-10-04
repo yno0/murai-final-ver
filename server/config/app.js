@@ -117,26 +117,46 @@ export function createApp() {
 
     // Serve static files from frontend build (if SERVE_FRONTEND is enabled)
     if (process.env.SERVE_FRONTEND === 'true') {
-        const frontendPath = path.join(__dirname, '..', '..', 'dist');
-        console.log('🌐 Serving frontend from:', frontendPath);
         console.log('🔍 Current working directory:', process.cwd());
         console.log('🔍 __dirname:', __dirname);
 
-        // Check if dist folder exists
-        if (fs.existsSync(frontendPath)) {
-            console.log('✅ Frontend dist folder found');
-            app.use(express.static(frontendPath));
-        } else {
-            console.log('❌ Frontend dist folder not found at:', frontendPath);
-            // Try alternative path
-            const altPath = path.join(process.cwd(), 'dist');
-            console.log('🔍 Trying alternative path:', altPath);
-            if (fs.existsSync(altPath)) {
-                console.log('✅ Frontend found at alternative path');
-                app.use(express.static(altPath));
-            } else {
-                console.log('❌ Frontend not found at alternative path either');
+        // Try multiple possible paths for the dist folder
+        const possiblePaths = [
+            path.join(__dirname, '..', '..', 'dist'),           // server/config -> root/dist
+            path.join(process.cwd(), '..', 'dist'),             // server -> root/dist
+            path.join(process.cwd(), 'dist'),                   // if cwd is root
+            path.join(__dirname, '..', 'dist'),                 // server/config -> server/dist
+            '/opt/render/project/src/dist'                      // Render absolute path
+        ];
+
+        let frontendPath = null;
+
+        for (const testPath of possiblePaths) {
+            console.log('🔍 Testing path:', testPath);
+            if (fs.existsSync(testPath)) {
+                frontendPath = testPath;
+                console.log('✅ Frontend dist folder found at:', frontendPath);
+                break;
             }
+        }
+
+        if (frontendPath) {
+            app.use(express.static(frontendPath));
+            console.log('✅ Static files middleware configured');
+        } else {
+            console.log('❌ Frontend dist folder not found in any expected location');
+            console.log('📁 Available directories:');
+            possiblePaths.forEach(testPath => {
+                const dir = path.dirname(testPath);
+                if (fs.existsSync(dir)) {
+                    try {
+                        const contents = fs.readdirSync(dir);
+                        console.log(`📂 ${dir}: [${contents.join(', ')}]`);
+                    } catch (e) {
+                        console.log(`📂 ${dir}: Error reading directory`);
+                    }
+                }
+            });
         }
     }
 
@@ -187,21 +207,36 @@ export function createApp() {
             }
 
             // Serve React app for all other routes
-            let frontendIndexPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
+            const possibleIndexPaths = [
+                path.join(__dirname, '..', '..', 'dist', 'index.html'),
+                path.join(process.cwd(), '..', 'dist', 'index.html'),
+                path.join(process.cwd(), 'dist', 'index.html'),
+                path.join(__dirname, '..', 'dist', 'index.html'),
+                '/opt/render/project/src/dist/index.html'
+            ];
 
-            // Check if index.html exists, try alternative path if not
-            if (!fs.existsSync(frontendIndexPath)) {
-                frontendIndexPath = path.join(process.cwd(), 'dist', 'index.html');
+            let frontendIndexPath = null;
+
+            for (const testPath of possibleIndexPaths) {
+                if (fs.existsSync(testPath)) {
+                    frontendIndexPath = testPath;
+                    break;
+                }
             }
 
-            console.log('🔍 Serving index.html from:', frontendIndexPath);
-            res.sendFile(frontendIndexPath, (err) => {
-                if (err) {
-                    logger.error('Error serving frontend:', err);
-                    console.log('❌ Failed to serve index.html from:', frontendIndexPath);
-                    ResponseUtil.error(res, "Frontend not available", 500);
-                }
-            });
+            if (frontendIndexPath) {
+                console.log('🔍 Serving index.html from:', frontendIndexPath);
+                res.sendFile(frontendIndexPath, (err) => {
+                    if (err) {
+                        logger.error('Error serving frontend:', err);
+                        console.log('❌ Failed to serve index.html from:', frontendIndexPath);
+                        ResponseUtil.error(res, "Frontend not available", 500);
+                    }
+                });
+            } else {
+                console.log('❌ index.html not found in any expected location');
+                ResponseUtil.error(res, "Frontend not available", 500);
+            }
         });
     } else {
         // 404 handler when not serving frontend

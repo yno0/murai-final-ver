@@ -5,14 +5,20 @@ services:
     env: node
     plan: free
     buildCommand: |
+      echo "🔍 Current directory: $(pwd)"
+      echo "📁 Directory contents: $(ls -la)"
       echo "Installing frontend dependencies..."
       npm install
       echo "Building frontend..."
       npm run build
       echo "Checking build output..."
       ls -la dist/
+      echo "📁 Full project structure:"
+      find . -name "dist" -type d
+      find . -name "index.html" -type f
       echo "Installing server dependencies..."
       cd server && npm install --production
+      echo "🔍 Final server directory: $(pwd)"
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
