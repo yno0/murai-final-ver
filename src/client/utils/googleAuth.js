@@ -6,12 +6,19 @@
  */
 export const getGoogleAuthUrl = () => {
   // In production, use relative URLs. In development, use localhost
-  if (import.meta.env.PROD) {
-    return '/api/auth/google';
+  const isProd = import.meta.env.PROD;
+  console.log('🔍 Environment check - PROD:', isProd);
+
+  if (isProd) {
+    const url = '/api/auth/google';
+    console.log('✅ Production Google OAuth URL:', url);
+    return url;
   } else {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     const baseUrl = apiUrl.replace('/api', '');
-    return `${baseUrl}/api/auth/google`;
+    const url = `${baseUrl}/api/auth/google`;
+    console.log('🔧 Development Google OAuth URL:', url);
+    return url;
   }
 };
 
