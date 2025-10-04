@@ -21,7 +21,7 @@ export default function WaitlistLandingPage() {
   const [isFaqVisible, setIsFaqVisible] = useState(false);
   const [isTestimonialsVisible, setIsTestimonialsVisible] = useState(false);
   const [isSeparatorVisible, setIsSeparatorVisible] = useState(false);
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const downloadSectionRef = useRef(null);
   const heroRef = useRef(null);
@@ -140,6 +140,18 @@ export default function WaitlistLandingPage() {
     return () => clearInterval(interval);
   }, [flaggingTechniques.length]);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('nav')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMobileMenuOpen]);
+
   // Intersection Observer for all sections fade-in animations
   useEffect(() => {
     const observerOptions = {
@@ -185,17 +197,17 @@ export default function WaitlistLandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-['Inter',_'system-ui',_sans-serif]">
+    <div className="min-h-screen bg-white font-['Inter',_'system-ui',_sans-serif]" style={{ scrollBehavior: 'smooth' }}>
       {/* Navigation Header */}
       <header className="w-full sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
           <nav className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-md px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
               {/* Logo */}
-              <div className="flex items-center space-x-2 sm:space-x-3">
+              <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
                 <img src={LogoMain} alt="Murai logo" className="h-6 sm:h-8 w-auto" />
                 <span className="text-lg sm:text-xl font-bold text-gray-900 font-['Poppins',_sans-serif]">MURAI</span>
-              </div>
+              </Link>
 
               {/* Center Navigation */}
               <div className="hidden lg:flex items-center space-x-1">
@@ -218,10 +230,10 @@ export default function WaitlistLandingPage() {
                   How it works
                 </a>
                 <a
-                  href="#pricing"
+                  href="#faq"
                   className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
                 >
-                  Pricing
+                  FAQ
                 </a>
               </div>
 
@@ -241,19 +253,79 @@ export default function WaitlistLandingPage() {
                 </Link>
 
                 {/* Mobile Menu */}
-                <button className="lg:hidden p-2 text-gray-700 hover:text-[#01434A] transition-colors">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden p-2 text-gray-700 hover:text-[#01434A] transition-colors"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    {isMobileMenuOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
                   </svg>
                 </button>
               </div>
             </div>
+
+            {/* Mobile Menu Dropdown */}
+            {isMobileMenuOpen && (
+              <div className="lg:hidden mt-4 py-4 border-t border-gray-200">
+                <div className="flex flex-col space-y-2">
+                  <a
+                    href="#about"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                  >
+                    About
+                  </a>
+                  <a
+                    href="#features"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                  >
+                    Features
+                  </a>
+                  <a
+                    href="#how-it-works"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                  >
+                    How it works
+                  </a>
+                  <a
+                    href="#faq"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="px-3 py-2 text-gray-700 hover:text-[#01434A] hover:bg-gray-50 rounded-lg transition-all duration-200 font-['Poppins',_sans-serif] text-sm"
+                  >
+                    FAQ
+                  </a>
+                  <div className="border-t border-gray-200 pt-2 mt-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-3 py-2 text-gray-700 hover:text-[#01434A] transition-colors font-['Poppins',_sans-serif] text-sm"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block mt-2 bg-[#01434A] text-white px-3 py-2 rounded-lg hover:bg-teal-700 transition-colors font-['Poppins',_sans-serif] text-sm font-medium"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </nav>
         </div>
       </header>
 
       {/* Hero Section */}
       <main
+        id="about"
         ref={heroRef}
         className={`flex-1 flex items-center px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 relative overflow-hidden transition-all duration-1000 ease-out ${
           isHeroVisible
@@ -422,6 +494,7 @@ export default function WaitlistLandingPage() {
 
       {/* Features Section */}
       <section
+        id="features"
         ref={featuresRef}
         className={`py-20 bg-white transition-all duration-1000 ease-out ${
           isFeaturesVisible
@@ -500,7 +573,7 @@ export default function WaitlistLandingPage() {
                 Customizable Settings
               </h3>
               <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed">
-                Personalize filtering with adjustable sensitivity levels and custom preferences.
+                Personalize filtering with custom preferences and language settings.
               </p>
             </div>
           </div>
@@ -582,6 +655,7 @@ export default function WaitlistLandingPage() {
 
       {/* How it Works Section */}
       <section
+        id="how-it-works"
         ref={howItWorksRef}
         className={`py-20 bg-white transition-all duration-1000 ease-out ${
           isHowItWorksVisible
@@ -719,7 +793,7 @@ export default function WaitlistLandingPage() {
                       <span className="text-2xl text-gray-400 font-['Poppins',_sans-serif] transition-all duration-500">/02</span>
                       <h3 className="text-5xl font-bold text-black font-['Poppins',_sans-serif] transition-all duration-500">Activate Protection</h3>
                       <p className="text-lg text-gray-600 font-['Poppins',_sans-serif] leading-relaxed transition-all duration-500">
-                        Switch it on with a single click and let the smart filter take over. Configure your preferences and enable real-time content filtering with customizable sensitivity levels.
+                        Switch it on with a single click and let the smart filter take over. Configure your preferences and enable real-time content filtering with customizable language settings.
                       </p>
                     </div>
                   ) : (
@@ -872,6 +946,7 @@ export default function WaitlistLandingPage() {
 
       {/* FAQ Section */}
       <section
+        id="faq"
         ref={faqRef}
         className={`py-24 bg-white transition-all duration-1000 ease-out ${
           isFaqVisible
@@ -966,7 +1041,7 @@ export default function WaitlistLandingPage() {
                     }`}>
                       <div className="pb-6 px-0">
                         <p className="text-gray-600 font-['Poppins',_sans-serif] leading-relaxed text-sm">
-                          Yes, you can customize which websites MURAI monitors and set different sensitivity levels for different types of content.
+                          Yes, you can customize which websites MURAI monitors and set different language preferences for different types of content.
                         </p>
                       </div>
                     </div>

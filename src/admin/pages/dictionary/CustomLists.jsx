@@ -60,14 +60,25 @@ export default function CustomLists() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <FiList className="text-[#015763]" />
-          Custom Lists
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Create and manage custom word lists for specific use cases
-        </p>
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-1">Custom Lists</h1>
+            <p className="text-sm text-gray-600">
+              Create and manage custom word lists for specific contexts • {customLists.length} lists
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiPlus className="h-4 w-4" />
+              Create List
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}

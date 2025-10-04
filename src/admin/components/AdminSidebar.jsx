@@ -70,24 +70,10 @@ export default function AdminSidebar() {
     integrations: false,
     settings: false,
     audit: false,
-    support: false,
     profile: false,
   });
 
-  const [userData, setUserData] = useState(null);
   const accountMenuRef = useRef(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    }
-  }, []);
 
   const handleLogoutClick = () => {
     logout();
@@ -133,7 +119,6 @@ export default function AdminSidebar() {
         integrations: false,
         settings: false,
         audit: false,
-        support: false,
         profile: false,
         [section]: true
       };
@@ -145,10 +130,8 @@ export default function AdminSidebar() {
       id: 'dashboard',
       label: 'Dashboard',
       icon: <FiHome />,
-      items: [
-        { label: 'Overview', href: '/admin/dashboard/overview', icon: <FiEye /> },
-        { label: 'Activity', href: '/admin/dashboard/activity', icon: <FiClock /> },
-      ]
+      href: '/admin/dashboard/overview',
+      items: []
     },
     {
       id: 'moderation',
@@ -156,7 +139,7 @@ export default function AdminSidebar() {
       icon: <FiShield />,
       items: [
         { label: 'Flagged Content', href: '/admin/moderation/flagged-content', icon: <FiFlag /> },
-        { label: 'Pending Reviews', href: '/admin/moderation/pending-reviews', icon: <FiClock /> },
+        { label: 'Reports', href: '/admin/moderation/reports', icon: <FiMessageSquare /> },
         { label: 'Resolved Cases', href: '/admin/moderation/resolved-cases', icon: <FiCheckCircle /> },
         { label: 'Rules', href: '/admin/moderation/rules', icon: <FiFileText /> },
       ]
@@ -196,17 +179,17 @@ export default function AdminSidebar() {
         { label: 'Roles & Permissions', href: '/admin/users/roles-permissions', icon: <FiKey /> },
       ]
     },
-    {
-      id: 'integrations',
-      label: 'Integrations',
-      icon: <FiGlobe />,
-      items: [
-        { label: 'Domains', href: '/admin/integrations/domains', icon: <FiLink /> },
-        { label: 'API Keys', href: '/admin/integrations/api-keys', icon: <FiKey /> },
-        { label: 'Logs', href: '/admin/integrations/logs', icon: <FiDatabase /> },
-        { label: 'Usage Stats', href: '/admin/integrations/usage-stats', icon: <FiBarChart /> },
-      ]
-    },
+    //{
+    //  id: 'integrations',
+    //  label: 'Integrations',
+    //  icon: <FiGlobe />,
+    //  items: [
+    //    { label: 'Domains', href: '/admin/integrations/domains', icon: <FiLink /> },
+    //    { label: 'API Keys', href: '/admin/integrations/api-keys', icon: <FiKey /> },
+    //    { label: 'Logs', href: '/admin/integrations/logs', icon: <FiDatabase /> },
+    //    { label: 'Usage Stats', href: '/admin/integrations/usage-stats', icon: <FiBarChart /> },
+    //  ]
+    // },
   ];
 
   const bottomSections = [
@@ -232,34 +215,56 @@ export default function AdminSidebar() {
         { label: 'Dictionary Changes', href: '/admin/audit/dictionary-changes', icon: <FiBook /> },
       ]
     },
-    {
-      id: 'support',
-      label: 'Support',
-      icon: <FiHeadphones />,
-      items: [
-        { label: 'User Reports', href: '/admin/support/user-reports', icon: <FiFlag /> },
-        { label: 'Feedback', href: '/admin/support/feedback', icon: <FiMessageSquare /> },
-        { label: 'Help Center', href: '/admin/support/help-center', icon: <FiHelpCircle /> },
-      ]
-    },
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: <FiUser />,
-      items: [
-        { label: 'Profile Settings', href: '/admin/profile/settings', icon: <FiUser /> },
-        { label: 'Change Password', href: '/admin/profile/change-password', icon: <FiLock /> },
-        { label: 'Security Settings', href: '/admin/profile/security', icon: <FiShield /> },
-      ]
-    },
+    // {
+    //   id: 'support',
+    //   label: 'Support',
+    //   icon: <FiHeadphones />,
+    //   items: [
+    //     { label: 'User Reports', href: '/admin/support/user-reports', icon: <FiFlag /> },
+    //     { label: 'Feedback', href: '/admin/support/feedback', icon: <FiMessageSquare /> },
+    //     { label: 'Help Center', href: '/admin/support/help-center', icon: <FiHelpCircle /> },
+    //   ]
+    // },
+    //{
+    //  id: 'profile',
+     // label: 'Profile',
+    //  icon: <FiUser />,
+     // items: [
+    //    { label: 'Profile Settings', href: '/admin/profile/settings', icon: <FiUser /> },
+     //   { label: 'Change Password', href: '/admin/profile/change-password', icon: <FiLock /> },
+    //    { label: 'Security Settings', href: '/admin/profile/security', icon: <FiShield /> },
+    //  ]
+   //   },
   ];
 
   const allSections = [...menuSections, ...bottomSections];
 
   const renderSection = (section) => {
     const isExpanded = expandedSections[section.id];
-    const hasActiveItem = section.items.some(item => location.pathname === item.href);
-    
+    const hasActiveItem = section.items.length > 0 ? section.items.some(item => location.pathname === item.href) : location.pathname === section.href;
+
+    // If section has direct href (no sub-items), render as direct link
+    if (section.href && section.items.length === 0) {
+      const isActive = location.pathname === section.href;
+      return (
+        <div key={section.id} className="mb-1">
+          <button
+            onClick={() => navigate(section.href)}
+            className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out ${
+              isActive
+                ? 'bg-[#015763] text-white font-medium'
+                : 'text-black hover:bg-[#015763]/10 hover:text-[#015763]'
+            }`}
+            style={{ fontSize: '14px' }}
+          >
+            <span className="text-lg flex-shrink-0">{section.icon}</span>
+            {isOpen && <span>{section.label}</span>}
+          </button>
+        </div>
+      );
+    }
+
+    // Original expandable section logic
     return (
       <div key={section.id} className="mb-1">
         <button
@@ -281,7 +286,7 @@ export default function AdminSidebar() {
             </span>
           )}
         </button>
-        
+
         {isOpen && isExpanded && (
           <div className="ml-6 mt-1 space-y-1">
             {section.items.map((item) => {
@@ -292,7 +297,7 @@ export default function AdminSidebar() {
                   onClick={() => navigate(item.href)}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-lg w-full transition-all duration-200 ease-in-out ${
                     isActive
-                      ? 'bg-[#015763] text-white shadow-sm font-medium'
+                      ? 'bg-[#015763] text-white font-medium'
                       : 'text-gray-500 hover:bg-[#015763]/10 hover:text-[#015763]'
                   }`}
                   style={{ fontSize: '13px' }}
@@ -311,7 +316,7 @@ export default function AdminSidebar() {
   return (
     <>
       <aside
-        className={`bg-white h-screen flex flex-col border-r border-gray-200 shadow-lg transition-all duration-300 pt-3 fixed left-0 top-0 z-10 ${
+        className={`bg-white h-screen flex flex-col border-r border-gray-200 transition-all duration-300 pt-3 fixed left-0 top-0 z-10 ${
           isOpen ? 'w-80' : 'w-16'
         }`}
         style={{ fontFamily: 'Poppins, sans-serif' }}
@@ -357,17 +362,23 @@ export default function AdminSidebar() {
               ) : (
                 // Collapsed view - show only main section icons
                 allSections.map((section) => {
-                  const hasActiveItem = section.items.some(item => location.pathname === item.href);
+                  const hasActiveItem = section.items.length > 0 ? section.items.some(item => location.pathname === item.href) : location.pathname === section.href;
                   return (
                     <button
                       key={section.id}
                       onClick={() => {
-                        toggleSidebar(true);
-                        toggleSection(section.id);
+                        if (section.href && section.items.length === 0) {
+                          // Direct navigation for sections with href
+                          navigate(section.href);
+                        } else {
+                          // Expand sidebar and toggle section for expandable sections
+                          toggleSidebar(true);
+                          toggleSection(section.id);
+                        }
                       }}
                       className={`flex items-center justify-center p-2 rounded-lg w-10 h-10 transition-all duration-200 ease-in-out ${
                         hasActiveItem
-                          ? 'bg-[#015763] text-white shadow-sm'
+                          ? 'bg-[#015763] text-white'
                           : 'text-black hover:bg-[#015763]/10 hover:text-[#015763]'
                       }`}
                       aria-label={section.label}
@@ -385,19 +396,75 @@ export default function AdminSidebar() {
         <div className={`flex flex-col gap-2 mb-3 ${isOpen ? 'px-3' : 'items-center'} relative border-t border-gray-100 pt-3`}>
           {isOpen ? (
             <>
-              <button
-                className="flex items-center justify-between bg-gradient-to-b from-gray-50 to-white rounded-lg px-3 py-3 text-gray-700 text-sm font-semibold shadow-sm w-full focus:outline-none focus:ring-2 focus:ring-gray-400 transition group"
-                onClick={() => setShowAccountMenu((prev) => !prev)}
-                aria-label="Account menu"
-                type="button"
-                tabIndex={0}
-              >
-                <div className="flex flex-col items-start">
-                  <span>{userData?.name || 'Admin User'}</span>
-                  <span className="text-xs text-gray-500 font-normal">{userData?.email || 'admin@murai.com'}</span>
-                </div>
-                {showAccountMenu ? <FiChevronUp className="text-lg ml-2" /> : <FiChevronDown className="text-lg ml-2" />}
-              </button>
+              <div ref={accountMenuRef} className="relative">
+                <button
+                  className="flex items-center justify-between border border-gray-200 bg-white rounded-lg px-3 py-3 text-gray-700 text-sm font-semibold w-full focus:outline-none focus:ring-2 focus:ring-gray-400 hover:border-gray-300 transition group"
+                  onClick={() => setShowAccountMenu((prev) => !prev)}
+                  aria-label="Account menu"
+                  type="button"
+                  tabIndex={0}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-sm font-medium text-blue-700">
+                        {(adminUser?.name || 'Admin User').charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium">{adminUser?.name || 'Admin User'}</span>
+                      <span className="text-xs text-gray-500 font-normal">{adminUser?.email || 'admin@murai.com'}</span>
+                    </div>
+                  </div>
+                  {showAccountMenu ? <FiChevronUp className="text-lg ml-2" /> : <FiChevronDown className="text-lg ml-2" />}
+                </button>
+
+                {/* Account Dropdown Menu */}
+                {showAccountMenu && (
+                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                    <button
+                      onClick={() => {
+                        navigate('/admin/profile/settings');
+                        setShowAccountMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FiUser className="h-4 w-4" />
+                      Profile Settings
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/admin/profile/change-password');
+                        setShowAccountMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FiLock className="h-4 w-4" />
+                      Change Password
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/admin/profile/security');
+                        setShowAccountMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FiShield className="h-4 w-4" />
+                      Security Settings
+                    </button>
+                    <hr className="my-2 border-gray-200" />
+                    <button
+                      onClick={() => {
+                        handleLogoutClick();
+                        setShowAccountMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <FiLogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <button

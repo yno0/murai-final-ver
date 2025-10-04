@@ -29,7 +29,13 @@ class ApiService {
       if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login?from=extension';
+        // Check if we're actually in an extension context before adding the parameter
+        const isInExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+        if (isInExtension) {
+          window.location.href = '/login?from=extension';
+        } else {
+          window.location.href = '/login';
+        }
         throw new Error('Authentication required');
       }
       

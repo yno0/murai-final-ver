@@ -74,7 +74,7 @@ export function useToast() {
   const [toasts, setToasts] = useState([]);
 
   const addToast = (message, type = 'info', duration = 5000) => {
-    const id = Date.now();
+    const id = Date.now() + Math.random(); // Better unique ID
     const toast = { id, message, type, duration };
     setToasts(prev => [...prev, toast]);
   };
@@ -100,10 +100,10 @@ export function useToast() {
   return {
     addToast,
     ToastContainer,
-    success: (message, duration) => addToast(message, 'success', duration),
-    error: (message, duration) => addToast(message, 'error', duration),
-    warning: (message, duration) => addToast(message, 'warning', duration),
-    info: (message, duration) => addToast(message, 'info', duration),
+    success: (message, duration = 4000) => addToast(message, 'success', duration),
+    error: (message, duration = 6000) => addToast(message, 'error', duration),
+    warning: (message, duration = 5000) => addToast(message, 'warning', duration),
+    info: (message, duration = 4000) => addToast(message, 'info', duration),
   };
 }
 

@@ -79,7 +79,7 @@ class MuraiContentScript {
   async loadSettings() {
     try {
       const result = await chrome.storage.sync.get([
-        'protectionEnabled', 'language', 'sensitivity', 'flagStyle',
+        'protectionEnabled', 'language', 'flagStyle',
         'highlightColor', 'whitelistWebsites', 'whitelistTerms', 'dictionary',
         'showHighlight', 'blurAmount', 'confidenceThreshold', 'detectionMode'
       ]);
@@ -87,7 +87,6 @@ class MuraiContentScript {
       this.settings = {
         enabled: result.protectionEnabled !== false,
         language: result.language || 'Mixed',
-        sensitivity: result.sensitivity || 'Medium',
         flagStyle: result.flagStyle || 'highlight',
         highlightColor: result.highlightColor || '#ff6b6b',
         whitelistWebsites: result.whitelistWebsites || [],
@@ -105,7 +104,6 @@ class MuraiContentScript {
       this.settings = {
         enabled: true, // Enable by default even if settings fail to load
         language: 'Mixed',
-        sensitivity: 'Medium',
         flagStyle: 'highlight',
         highlightColor: '#ff6b6b',
         whitelistWebsites: [],
@@ -956,44 +954,36 @@ class MuraiContentScript {
       // Extract detected term from the match
       const detectedTerm = contextInfo.originalMatch?.word || contextInfo.match?.word || 'unknown';
 
-      // Prepare detection data in the format expected by the server
-      const detectionData = {
-        detectedTerm: detectedTerm,
+      // Prepare flagged content data in the format expected by the server
+      const flaggedContentData = {
+        language: this.settings.language === 'Both' ? 'Mixed' : this.settings.language || 'Mixed',
+        detectedWord: detectedTerm,
         context: contextInfo.contextText || contextInfo.fullText,
-        site: {
-          url: window.location.href,
-          title: document.title || 'Unknown Page'
-        },
-        aiResponse: {
-          isToxic: analysis.is_toxic || true,
-          confidence: analysis.confidence || 0.7,
-          reason: analysis.reason || 'Content flagged by MURAi detection system',
-          modelVersion: 'roberta-v1',
-          language: this.settings.language || 'Mixed'
-        },
-        metadata: {
-          detectionMethod: this.settings.detectionMode || 'hybrid',
-          processingTime: Date.now() - (this.detectionStartTime || Date.now()),
-          extensionVersion: chrome.runtime.getManifest()?.version || '1.0.0'
-        }
+        sentiment: 'negative', // Default for flagged content
+        confidenceScore: analysis.confidence || 0.7,
+        sourceUrl: window.location.href,
+        detectionMethod: this.settings.detectionMode || 'hybrid',
+        aiModel: 'roberta-v1',
+        processingTime: Date.now() - (this.detectionStartTime || Date.now()),
+        severity: analysis.confidence >= 0.8 ? 'high' : analysis.confidence >= 0.6 ? 'medium' : 'low'
       };
 
       // Send to background script for API request
       chrome.runtime.sendMessage({
         type: 'API_REQUEST',
-        url: 'http://localhost:5000/api/detections',
+        url: 'http://localhost:5000/api/flagged-content',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${result.token}`,
-          'X-Extension-Version': detectionData.metadata.extensionVersion
+          'X-Extension-Version': chrome.runtime.getManifest()?.version || '1.0.0'
         },
-        body: JSON.stringify(detectionData)
+        body: JSON.stringify(flaggedContentData)
       }, (response) => {
         if (response?.success) {
-          console.log('✅ Detection submitted to server successfully:', response.data?.detectionId);
+          console.log('✅ Flagged content submitted to server successfully:', response.data?._id);
         } else {
-          console.warn('⚠️ Failed to submit detection to server:', response?.error);
+          console.warn('⚠️ Failed to submit flagged content to server:', response?.error);
         }
       });
 

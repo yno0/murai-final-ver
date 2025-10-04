@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiLink, FiEdit, FiPlus, FiTrash2, FiSearch, FiSave, FiX, FiRefreshCw } from 'react-icons/fi';
+import { FiLink, FiEdit, FiPlus, FiTrash2, FiSearch, FiSave, FiX, FiRefreshCw, FiFilter } from 'react-icons/fi';
 import adminApiService from '../../services/adminApi.js';
 
 export default function SynonymsVariations() {
@@ -12,6 +12,10 @@ export default function SynonymsVariations() {
   const [saving, setSaving] = useState(false);
   const [languageFilter, setLanguageFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Load words from API
   const loadWords = async () => {
@@ -56,6 +60,18 @@ export default function SynonymsVariations() {
     const matchesCategory = categoryFilter === 'all' || group.category.toLowerCase() === categoryFilter;
     return matchesSearch && matchesLanguage && matchesCategory;
   });
+
+  // Pagination
+  const totalItems = filteredGroups.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedGroups = filteredGroups.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, languageFilter, categoryFilter]);
 
   // Handle form submission
   const handleSave = async (formData) => {
@@ -107,82 +123,49 @@ export default function SynonymsVariations() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <FiLink className="text-[#015763]" />
-          Synonyms & Variations
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Manage word relationships, synonyms, and common variations
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-[#015763] bg-opacity-10 rounded-lg">
-              <FiLink className="h-6 w-6 text-[#015763]" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Word Groups</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredGroups.length}</p>
-            </div>
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-1">Synonyms & Variations</h1>
+            <p className="text-sm text-gray-600">
+              Manage word relationships and variations • {totalItems} word groups
+            </p>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FiEdit className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Words</p>
-              <p className="text-2xl font-bold text-gray-900">{words.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FiPlus className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Variations</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredGroups.reduce((sum, g) => sum + g.variations.length, 0)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <FiRefreshCw className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Linked Words</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredGroups.reduce((sum, g) => sum + g.wordCount, 0)}</p>
-            </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiPlus className="h-4 w-4" />
+              Add Group
+            </button>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search word groups..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#015763] focus:border-transparent w-full"
-              />
-            </div>
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search word groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2">
+            <FiFilter className="h-4 w-4 text-gray-400" />
             <select
               value={languageFilter}
               onChange={(e) => setLanguageFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
             >
               <option value="all">All Languages</option>
               <option value="english">English</option>
@@ -191,7 +174,7 @@ export default function SynonymsVariations() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
             >
               <option value="all">All Categories</option>
               <option value="profanity">Profanity</option>
@@ -201,95 +184,187 @@ export default function SynonymsVariations() {
               <option value="other">Other</option>
             </select>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={loadWords}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              <FiRefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#015763] text-white rounded-lg hover:bg-[#023a42] transition-colors"
-            >
-              <FiPlus className="h-4 w-4" />
-              Add Word Group
-            </button>
-          </div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={loadWords}
+            disabled={isLoading}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+          >
+            <FiRefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
-        {error && (
-          <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</div>
-        )}
       </div>
 
-      {/* Word Groups */}
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm text-center">
-            <FiRefreshCw className="h-8 w-8 text-[#015763] mx-auto mb-2 animate-spin" />
-            <p className="text-gray-600">Loading word groups...</p>
-          </div>
-        ) : filteredGroups.length === 0 ? (
-          <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm text-center">
-            <FiLink className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600">No word groups found with variations.</p>
-            <p className="text-sm text-gray-500 mt-1">Add variations to existing words to see them here.</p>
-          </div>
-        ) : (
-          filteredGroups.map((group) => (
-          <div key={group.id} className="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">{group.mainWord}</h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>{group.language}</span>
-                    <span>{group.category}</span>
-                    <span>{group.wordCount} total words</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSelectedWord(group)}
-                    className="text-blue-600 hover:text-blue-700 transition-colors"
-                    title="Edit word group"
-                  >
-                    <FiEdit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(group)}
-                    className="text-red-600 hover:text-red-700 transition-colors"
-                    title="Delete word group"
-                  >
-                    <FiTrash2 className="h-4 w-4" />
-                  </button>
-                </div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Word Groups Table */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="border-b border-gray-200 bg-gray-50/50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Main Word
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Language
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Variations
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {isLoading ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Loading word groups...
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedGroups.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    {searchTerm || languageFilter !== 'all' || categoryFilter !== 'all'
+                      ? 'No word groups match your search criteria.'
+                      : 'No word groups found. Add variations to existing words to see them here.'
+                    }
+                  </td>
+                </tr>
+              ) : (
+                paginatedGroups.map((group) => (
+                  <tr key={group.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {group.mainWord}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        {group.language}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+                        {group.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {group.variations.length > 0 ? (
+                          group.variations.slice(0, 3).map((variation, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200"
+                            >
+                              {variation}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">No variations</span>
+                        )}
+                        {group.variations.length > 3 && (
+                          <span className="text-xs text-gray-500">
+                            +{group.variations.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      <div className="flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => setSelectedWord(group)}
+                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Edit word group"
+                        >
+                          <FiEdit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(group)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          title="Delete word group"
+                        >
+                          <FiTrash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bg-white border border-gray-200 rounded-lg px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} word groups
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 text-sm border rounded-md transition-colors ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
               </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Variations</h4>
-                <div className="flex flex-wrap gap-2">
-                  {group.variations.length > 0 ? (
-                    group.variations.map((variation, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
-                      >
-                        {variation}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-gray-500 italic">No variations</span>
-                  )}
-                </div>
-              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
             </div>
           </div>
-          ))
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Add/Edit Form Modal */}
       {(showAddForm || selectedWord) && (

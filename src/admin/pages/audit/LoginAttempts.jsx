@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { FiUser, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import {
+  FiUser,
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight,
+  FiFilter,
+  FiRefreshCw,
+  FiLogIn,
+  FiLogOut,
+  FiClock,
+  FiAlertCircle,
+  FiX,
+  FiShield
+} from 'react-icons/fi'
 import adminApiService from '../../services/adminApi.js'
 
 export default function LoginAttempts() {
@@ -8,8 +21,10 @@ export default function LoginAttempts() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(20)
+  const [limit, setLimit] = useState(10)
   const [total, setTotal] = useState(0)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
 
   useEffect(() => {
     const load = async () => {
@@ -35,60 +50,265 @@ export default function LoginAttempts() {
 
   const totalPages = Math.max(Math.ceil(total / Math.max(limit, 1)), 1)
 
+  // Helper functions
+  const getStatusBadgeColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'success': return 'bg-green-50 text-green-700 border border-green-200';
+      case 'failed': return 'bg-red-50 text-red-700 border border-red-200';
+      case 'blocked': return 'bg-orange-50 text-orange-700 border border-orange-200';
+      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+    }
+  };
+
+  const getTypeBadgeColor = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'login': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      case 'logout': return 'bg-purple-50 text-purple-700 border border-purple-200';
+      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+    }
+  };
+
+  const formatTimestamp = (timestamp) => {
+    return new Date(timestamp).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <FiUser className="text-[#015763]" />
-          Login Attempts
-        </h1>
-        <p className="text-gray-600 mt-1">Admin login/logout attempts</p>
+    <div className="space-y-6">
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <FiShield className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900 mb-1">Login Attempts</h1>
+              <p className="text-sm text-gray-600">
+                Monitor admin authentication activities and security events • {total} total attempts
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              disabled={isLoading}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white p-3 rounded-lg border border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <FiSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input value={search} onChange={(e)=>{ setSearch(e.target.value); setPage(1) }} placeholder="Search…" className="pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-md" />
+      {/* Error Alert */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 flex items-center gap-2">
+          <FiAlertCircle className="text-red-600 flex-shrink-0 h-4 w-4" />
+          <span className="text-red-700 text-sm">{error}</span>
+          <button
+            onClick={() => setError('')}
+            className="ml-auto text-red-600 hover:text-red-800"
+          >
+            <FiX className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Search and Filter Controls */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search by admin name, email, or IP address..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
           </div>
-          <div className="ml-auto flex items-center gap-2 text-sm">
-            <span className="text-gray-600">Rows</span>
-            <select value={limit} onChange={(e)=>{ setLimit(Number(e.target.value)); setPage(1) }} className="px-2 py-1 border border-gray-300 rounded">
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2">
+            <FiFilter className="h-4 w-4 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+              <option value="blocked">Blocked</option>
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+            >
+              <option value="all">All Types</option>
+              <option value="login">Login</option>
+              <option value="logout">Logout</option>
             </select>
           </div>
         </div>
       </div>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
-
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="divide-y divide-gray-200">
-          {isLoading ? (
-            <div className="p-4 text-sm text-gray-600">Loading…</div>
-          ) : logs.length === 0 ? (
-            <div className="p-4 text-sm text-gray-600">No attempts.</div>
-          ) : logs.map((log) => (
-            <div key={log._id || log.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-900 font-medium">{log.action}</div>
-                <div className="text-xs text-gray-500">{log.timestamp || log.createdAt}</div>
-              </div>
-              {log.details && <div className="text-sm text-gray-600 mt-1">{log.details}</div>}
-              <div className="text-xs text-gray-500 mt-1">by {log.metadata?.actorName || log.metadata?.actorEmail || 'Admin'}</div>
-            </div>
-          ))}
-        </div>
-        <div className="p-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm">
-          <span className="text-gray-600">Page {page} of {totalPages} • {total} items</span>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 rounded border border-gray-300" disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))}><FiChevronLeft /></button>
-            <button className="px-3 py-1 rounded border border-gray-300" disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))}><FiChevronRight /></button>
-          </div>
+      {/* Login Attempts Table */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="border-b border-gray-200 bg-gray-50/50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Admin
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  IP Address
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Timestamp
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {isLoading ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Loading login attempts...
+                    </div>
+                  </td>
+                </tr>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    {search || statusFilter !== 'all' || typeFilter !== 'all'
+                      ? 'No login attempts match your search criteria.'
+                      : 'No login attempts found. Login attempts will appear here as admins authenticate.'
+                    }
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => (
+                  <tr key={log._id || log.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <span className="text-sm font-medium text-blue-700">
+                            {(log.metadata?.actorName || 'A').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {log.metadata?.actorName || 'Unknown Admin'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {log.metadata?.actorEmail || 'No email'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getTypeBadgeColor(log.action)}`}>
+                        {log.action?.includes('login') ? 'Login' : log.action?.includes('logout') ? 'Logout' : log.action || 'Unknown'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getStatusBadgeColor(log.status || 'success')}`}>
+                        {log.status || 'Success'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {log.metadata?.ipAddress || log.ipAddress || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <FiClock className="h-3 w-3" />
+                        {formatTimestamp(log.timestamp || log.createdAt)}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bg-white border border-gray-200 rounded-lg px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} attempts
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1 || isLoading}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => {
+                  if (
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= page - 1 && pageNum <= page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`px-3 py-2 text-sm border rounded-md transition-colors ${
+                          page === pageNum
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    pageNum === page - 2 ||
+                    pageNum === page + 2
+                  ) {
+                    return <span key={pageNum} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || isLoading}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

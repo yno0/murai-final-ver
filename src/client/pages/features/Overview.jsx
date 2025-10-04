@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { FiUsers, FiShield, FiAlertTriangle, FiClock, FiCheckCircle, FiX } from 'react-icons/fi'
 import apiService from '../../services/api.js'
+import { useToastContext } from '../../contexts/ToastContext.jsx'
 
 export default function Overview() {
+  const toast = useToastContext()
   const [isLoading, setIsLoading] = useState(true)
   const [statusData, setStatusData] = useState({
     accountStatus: 'Active',
@@ -12,7 +14,6 @@ export default function Overview() {
     lastScan: 'Loading...'
   })
   const [recentActivity, setRecentActivity] = useState([])
-  const [error, setError] = useState('')
   const [selectedTimeRange] = useState('week')
   const [showExtensionNotice, setShowExtensionNotice] = useState(false)
 
@@ -39,7 +40,6 @@ export default function Overview() {
   const loadOverviewData = async () => {
     try {
       setIsLoading(true)
-      setError('')
 
       // Check if user is authenticated
       const token = localStorage.getItem('token')
@@ -151,7 +151,7 @@ export default function Overview() {
 
     } catch (e) {
       console.error('Failed to load overview data:', e)
-      setError('Failed to load overview data. Please try again.')
+      toast.error('Failed to load overview data. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -220,36 +220,6 @@ export default function Overview() {
                   </a>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error Notice */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-start">
-              <FiAlertTriangle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800">Error Loading Data</h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
-                <div className="mt-2">
-                  <button
-                    onClick={() => {
-                      setError('')
-                      loadOverviewData()
-                    }}
-                    className="text-xs text-red-600 hover:text-red-800 font-medium"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => setError('')}
-                className="ml-2 text-red-600 hover:text-red-800"
-              >
-                <FiX className="h-4 w-4" />
-              </button>
             </div>
           </div>
         )}

@@ -30,9 +30,8 @@ import AdminAuthWrapper from './admin/components/AdminAuthWrapper.jsx'
 
 // Import admin pages
 import SystemOverview from './admin/pages/dashboard/SystemOverview.jsx'
-import RecentActivity from './admin/pages/dashboard/RecentActivity.jsx'
 import FlaggedContentLogs from './admin/pages/moderation/FlaggedContentLogs.jsx'
-import PendingReviews from './admin/pages/moderation/PendingReviews.jsx'
+import Reports from './admin/pages/moderation/Reports.jsx'
 import ResolvedCases from './admin/pages/moderation/ResolvedCases.jsx'
 import ModerationRules from './admin/pages/moderation/ModerationRules.jsx'
 import SentimentTrends from './admin/pages/analytics/SentimentTrends.jsx'
@@ -120,11 +119,10 @@ const router = createBrowserRouter([
 
       // Dashboard
       { path: 'dashboard/overview', element: <SystemOverview /> },
-      { path: 'dashboard/activity', element: <RecentActivity /> },
 
       // Moderation Management
       { path: 'moderation/flagged-content', element: <FlaggedContentLogs /> },
-      { path: 'moderation/pending-reviews', element: <PendingReviews /> },
+      { path: 'moderation/reports', element: <Reports /> },
       { path: 'moderation/resolved-cases', element: <ResolvedCases /> },
       { path: 'moderation/rules', element: <ModerationRules /> },
 

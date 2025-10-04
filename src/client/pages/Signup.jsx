@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Eye, EyeOff, X } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import Logo from "../../shared/assets/LogoMain.svg";
 import authService from '../services/authService.js';
 
@@ -197,7 +197,9 @@ export default function Signup() {
       {/* Top logo and heading outside the card */}
       <div className="w-full max-w-lg text-center">
         <div className=" flex justify-center">
-          <img src={Logo} alt="Logo" className="w-18 h-12 object-contain" />
+          <Link to="/">
+            <img src={Logo} alt="Logo" className="w-18 h-12 object-contain hover:opacity-80 transition-opacity" />
+          </Link>
         </div>
         <h1 className="text-xl md:text-[35px] font-medium text-black-900 font-['Playfair_Display']">Create your profile</h1>
       </div>

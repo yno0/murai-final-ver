@@ -4,14 +4,15 @@ import { useNavigate } from 'react-router-dom'
 import extensionSettingsService from '../../services/extensionSettingsService.js'
 import authService from '../../services/authService.js'
 import ExtensionHeader from '../../components/ExtensionHeader.jsx'
+import { useToastContext } from '../../contexts/ToastContext.jsx'
 
 export default function Extension() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [sidebarWidth, setSidebarWidth] = useState('256px')
   const [settings, setSettings] = useState({
     enabled: true,
     language: 'Both',
-    sensitivity: 'medium',
     detectionMode: 'term-based',
     flaggingStyle: 'highlight',
     highlightColor: '#374151',
@@ -21,7 +22,6 @@ export default function Extension() {
   const [originalSettings, setOriginalSettings] = useState(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [syncStatus, setSyncStatus] = useState({ lastSync: null, status: 'synced' })
   const [user, setUser] = useState(null)
   const [newWebsite, setNewWebsite] = useState('')
@@ -136,26 +136,25 @@ export default function Extension() {
   const loadPreferences = useCallback(async () => {
     try {
       setIsLoading(true)
-      setError(null)
-      
+
       // Use actual extension settings service
       const response = await extensionSettingsService.getSettings()
       const loadedSettings = extensionSettingsService.convertFromApiFormat(response.data)
-      
+
       setSettings(loadedSettings)
       setOriginalSettings(JSON.parse(JSON.stringify(loadedSettings)))
       setHasUnsavedChanges(false)
-      setSyncStatus({ 
-        lastSync: loadedSettings.lastSync, 
-        status: loadedSettings.syncStatus 
+      setSyncStatus({
+        lastSync: loadedSettings.lastSync,
+        status: loadedSettings.syncStatus
       })
     } catch (e) {
-      setError('Failed to load preferences')
+      toast.error('Failed to load preferences')
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     loadPreferences()
@@ -168,7 +167,6 @@ export default function Extension() {
 
   const handleSync = async () => {
     setSyncStatus((prev) => ({ ...prev, status: 'syncing' }))
-    setError(null)
     try {
       console.log('🔄 Starting sync process...')
       console.log('Last sync timestamp:', syncStatus.lastSync)
@@ -191,9 +189,10 @@ export default function Extension() {
         status: 'synced'
       })
       console.log('✅ Sync completed successfully')
+      toast.success('Settings synced successfully!')
     } catch (e) {
       console.error('❌ Sync failed:', e)
-      setError(`Failed to sync preferences: ${e.message}`)
+      toast.error(`Failed to sync preferences: ${e.message}`)
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
     }
   }
@@ -201,7 +200,13 @@ export default function Extension() {
   const handleLogout = async () => {
     try {
       await authService.logout()
-      window.location.href = '/login?from=extension'
+      // Check if we're actually in an extension context before adding the parameter
+      const isInExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+      if (isInExtension) {
+        window.location.href = '/login?from=extension'
+      } else {
+        window.location.href = '/login'
+      }
     } catch (error) {
       console.error('Logout failed:', error)
     }
@@ -237,7 +242,6 @@ export default function Extension() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-    setError(null)
 
     try {
       console.log('🔄 Starting save process...')
@@ -251,7 +255,7 @@ export default function Extension() {
       const validation = extensionSettingsService.validateSettings(settings)
       if (!validation.isValid) {
         console.log('❌ Validation failed:', validation.errors)
-        setError(validation.errors.join(', '))
+        toast.error(validation.errors.join(', '))
         return
       }
 
@@ -271,12 +275,13 @@ export default function Extension() {
         status: 'synced'
       })
       console.log('✅ Settings saved successfully')
+      toast.success('Extension settings saved successfully!')
 
       // Sync settings to extension chrome.storage
       await syncSettingsToExtension(updatedSettings)
     } catch (e) {
       console.error('❌ Save failed:', e)
-      setError(`Failed to save preferences: ${e.message}`)
+      toast.error(`Failed to save preferences: ${e.message}`)
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
     } finally {
       setIsLoading(false)
@@ -287,20 +292,20 @@ export default function Extension() {
     if (window.confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
       try {
         setIsLoading(true)
-        setError(null)
-        
+
         const response = await extensionSettingsService.resetSettings()
         const resetSettings = extensionSettingsService.convertFromApiFormat(response.data)
-        
+
         setSettings(resetSettings)
         setOriginalSettings(JSON.parse(JSON.stringify(resetSettings)))
         setHasUnsavedChanges(false)
-        setSyncStatus({ 
-          lastSync: resetSettings.lastSync, 
-          status: 'synced' 
+        setSyncStatus({
+          lastSync: resetSettings.lastSync,
+          status: 'synced'
         })
+        toast.success('Settings reset to default successfully!')
       } catch (e) {
-        setError('Failed to reset preferences')
+        toast.error('Failed to reset preferences')
         setSyncStatus((prev) => ({ ...prev, status: 'error' }))
       } finally {
         setIsLoading(false)
@@ -357,16 +362,6 @@ export default function Extension() {
       />
 
       <div className={`max-w-7xl mx-auto px-6 py-8 ${hasUnsavedChanges ? 'pb-24' : ''}`}>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
-            </div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <div className="flex items-center justify-between mb-8">
@@ -397,17 +392,7 @@ export default function Extension() {
                 </select>
               </div>
 
-              <div className="rounded-lg border border-gray-200 p-6">
-                <div className="flex flex-col gap-1.5 mb-4">
-                  <label className="text-sm font-medium text-gray-900">Sensitivity Level</label>
-                  <p className="text-sm text-gray-500">Adjust how strictly content is filtered</p>
-                </div>
-                <select value={settings.sensitivity} onChange={(e) => handleSettingChange('sensitivity', e.target.value)} className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#015763] focus-visible:ring-offset-2">
-                  <option value="low">Low - Only flag explicit content</option>
-                  <option value="medium">Medium - Balanced filtering</option>
-                  <option value="high">High - Strict content filtering</option>
-                </select>
-              </div>
+
 
               <div className="rounded-lg border border-gray-200 p-6">
                 <div className="flex flex-col gap-1.5 mb-4">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { FiDownload, FiUpload, FiSearch, FiFilter, FiCheck, FiX, FiAlertCircle } from 'react-icons/fi'
+import { FiDownload, FiUpload, FiSearch, FiFilter, FiCheck, FiX, FiAlertCircle, FiFileText, FiDatabase } from 'react-icons/fi'
 import adminApiService from '../../services/adminApi.js'
 
 export default function ImportExport() {
@@ -115,21 +115,43 @@ export default function ImportExport() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Import & Export</h1>
-        <p className="text-gray-600 mt-1">Export current dictionary or import from a JSON file.</p>
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-1">Import & Export</h1>
+            <p className="text-sm text-gray-600">
+              Export current dictionary or import from a JSON file • {filtered.length} words available
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <FiDatabase className="h-4 w-4" />
+              {words.length} total words
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Export Controls */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Export Dictionary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      {/* Export Section */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <FiDownload className="h-5 w-5 text-blue-600" />
+          </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Language Filter</label>
+            <h3 className="text-lg font-semibold text-gray-900">Export Dictionary</h3>
+            <p className="text-sm text-gray-600">Download your dictionary data as a JSON file</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Language Filter</label>
             <select
               value={exportFilters.language}
               onChange={(e) => setExportFilters({...exportFilters, language: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
             >
               <option value="">All Languages</option>
               <option value="English">English</option>
@@ -137,11 +159,11 @@ export default function ImportExport() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category Filter</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category Filter</label>
             <select
               value={exportFilters.category}
               onChange={(e) => setExportFilters({...exportFilters, category: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
             >
               <option value="">All Categories</option>
               <option value="profanity">Profanity</option>
@@ -155,68 +177,89 @@ export default function ImportExport() {
             <button
               onClick={handleExport}
               disabled={isLoading}
-              className="w-full px-4 py-2 bg-[#015763] text-white rounded-lg hover:bg-[#014a54] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
             >
-              <FiDownload /> {isLoading ? 'Exporting...' : 'Export JSON'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <FiDownload className="h-4 w-4" />
+                  Export JSON
+                </>
+              )}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Import Controls */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Import Dictionary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      {/* Import Section */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-green-50 rounded-lg">
+            <FiUpload className="h-5 w-5 text-green-600" />
+          </div>
           <div>
+            <h3 className="text-lg font-semibold text-gray-900">Import Dictionary</h3>
+            <p className="text-sm text-gray-600">Upload a JSON file to add words to your dictionary</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="space-y-3">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={importOptions.overwriteExisting}
                 onChange={(e) => setImportOptions({...importOptions, overwriteExisting: e.target.checked})}
-                className="rounded border-gray-300 text-[#015763] focus:ring-[#015763]"
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Overwrite existing words</span>
             </label>
-          </div>
-          <div>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={importOptions.skipInvalid}
                 onChange={(e) => setImportOptions({...importOptions, skipInvalid: e.target.checked})}
-                className="rounded border-gray-300 text-[#015763] focus:ring-[#015763]"
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-700">Skip invalid entries</span>
             </label>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={openFilePicker}
-            disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2"
-          >
-            <FiUpload /> {isLoading ? 'Importing...' : 'Import JSON'}
-          </button>
-          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative">
-              <FiSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search current…" className="pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-md" />
-            </div>
+          <div className="flex items-end">
+            <button
+              onClick={openFilePicker}
+              disabled={isLoading}
+              className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <FiUpload className="h-4 w-4" />
+                  Import JSON
+                </>
+              )}
+            </button>
+            <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
           </div>
         </div>
 
         {/* Progress and Status */}
         {(progress.total > 0 && isLoading) && (
-          <div className="mt-3">
-            <div className="flex justify-between text-sm text-gray-700 mb-1">
-              <span>Processing...</span>
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex justify-between text-sm text-blue-700 mb-2">
+              <span>Processing import...</span>
               <span>{progress.done}/{progress.total}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-blue-200 rounded-full h-2">
               <div
-                className="bg-[#015763] h-2 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.done / progress.total) * 100}%` }}
               ></div>
             </div>
@@ -225,32 +268,40 @@ export default function ImportExport() {
 
         {/* Import Results */}
         {importResults && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Import Results</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <FiCheck className="text-green-600" />
-                <span>Imported: {importResults.imported}</span>
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Import Results</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-green-100 rounded">
+                  <FiCheck className="h-3 w-3 text-green-600" />
+                </div>
+                <span className="text-gray-700">Imported: <span className="font-medium">{importResults.imported}</span></span>
               </div>
-              <div className="flex items-center gap-1">
-                <FiCheck className="text-blue-600" />
-                <span>Updated: {importResults.updated}</span>
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-blue-100 rounded">
+                  <FiCheck className="h-3 w-3 text-blue-600" />
+                </div>
+                <span className="text-gray-700">Updated: <span className="font-medium">{importResults.updated}</span></span>
               </div>
-              <div className="flex items-center gap-1">
-                <FiX className="text-yellow-600" />
-                <span>Skipped: {importResults.skipped}</span>
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-yellow-100 rounded">
+                  <FiX className="h-3 w-3 text-yellow-600" />
+                </div>
+                <span className="text-gray-700">Skipped: <span className="font-medium">{importResults.skipped}</span></span>
               </div>
-              <div className="flex items-center gap-1">
-                <FiAlertCircle className="text-red-600" />
-                <span>Errors: {importResults.errors?.length || 0}</span>
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-red-100 rounded">
+                  <FiAlertCircle className="h-3 w-3 text-red-600" />
+                </div>
+                <span className="text-gray-700">Errors: <span className="font-medium">{importResults.errors?.length || 0}</span></span>
               </div>
             </div>
             {importResults.errors && importResults.errors.length > 0 && (
-              <details className="mt-2">
-                <summary className="text-sm text-gray-700 cursor-pointer">View Errors</summary>
-                <div className="mt-1 text-xs text-red-600 max-h-32 overflow-y-auto">
+              <details className="mt-3">
+                <summary className="text-sm text-gray-700 cursor-pointer hover:text-gray-900">View Errors ({importResults.errors.length})</summary>
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md max-h-32 overflow-y-auto">
                   {importResults.errors.map((error, index) => (
-                    <div key={index}>{error}</div>
+                    <div key={index} className="text-xs text-red-700 py-1">{error}</div>
                   ))}
                 </div>
               </details>
@@ -258,34 +309,90 @@ export default function ImportExport() {
           </div>
         )}
 
-        {message && <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">{message}</div>}
-        {error && <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</div>}
+        {message && (
+          <div className="mt-4 p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+            {message}
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md">
+            {error}
+          </div>
+        )}
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {/* Search and Preview */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-50 rounded-lg">
+              <FiFileText className="h-5 w-5 text-gray-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Current Dictionary Preview</h3>
+              <p className="text-sm text-gray-600">Browse your current dictionary words</p>
+            </div>
+          </div>
+          <div className="relative">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search words..."
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <table className="min-w-full">
+            <thead className="border-b border-gray-200 bg-gray-50/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Word</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Word</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Language</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Category</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
               {isLoading ? (
-                <tr><td className="px-6 py-4 text-sm text-gray-500" colSpan={3}>Loading…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td className="px-6 py-4 text-sm text-gray-500" colSpan={3}>No results.</td></tr>
-              ) : filtered.map((w) => (
-                <tr key={w._id || w.id || `${w.word}-${w.language}`}>
-                  <td className="px-6 py-3 text-sm text-gray-900">{w.word}</td>
-                  <td className="px-6 py-3 text-sm text-gray-900">{w.language}</td>
-                  <td className="px-6 py-3 text-sm text-gray-900">{w.category}</td>
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={3}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Loading words...
+                    </div>
+                  </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={3}>
+                    {search ? 'No words match your search.' : 'No words found in dictionary.'}
+                  </td>
+                </tr>
+              ) : (
+                filtered.slice(0, 50).map((w) => (
+                  <tr key={w._id || w.id || `${w.word}-${w.language}`} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{w.word}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        {w.language}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+                        {w.category}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+          {filtered.length > 50 && (
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center text-sm text-gray-600">
+              Showing first 50 of {filtered.length} words. Use search to find specific words.
+            </div>
+          )}
         </div>
       </div>
     </div>

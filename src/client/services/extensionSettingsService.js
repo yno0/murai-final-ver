@@ -65,7 +65,6 @@ class ExtensionSettingsService {
     return {
       enabled: settings.enabled,
       language: settings.language,
-      sensitivity: settings.sensitivity,
       detectionMode: settings.detectionMode || 'term-based',
       flaggingStyle: settings.flaggingStyle,
       highlightColor: settings.highlightColor,
@@ -82,7 +81,6 @@ class ExtensionSettingsService {
     return {
       enabled: apiSettings.enabled,
       language: apiSettings.language,
-      sensitivity: apiSettings.sensitivity,
       detectionMode: apiSettings.detectionMode || 'term-based',
       flaggingStyle: apiSettings.flaggingStyle,
       highlightColor: apiSettings.highlightColor,
@@ -102,7 +100,6 @@ class ExtensionSettingsService {
     return {
       enabled: true,
       language: 'Both',
-      sensitivity: 'medium',
       detectionMode: 'term-based',
       flaggingStyle: 'highlight',
       highlightColor: '#374151',
@@ -129,9 +126,7 @@ class ExtensionSettingsService {
       errors.push('Invalid language option');
     }
 
-    if (settings.sensitivity && !['low', 'medium', 'high'].includes(settings.sensitivity)) {
-      errors.push('Invalid sensitivity level');
-    }
+
 
     if (settings.flaggingStyle && !['blur', 'highlight', 'asterisk', 'underline', 'none'].includes(settings.flaggingStyle)) {
       errors.push('Invalid flagging style');

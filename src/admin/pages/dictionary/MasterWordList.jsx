@@ -110,48 +110,39 @@ export default function MasterWordList() {
     }
   };
 
+  const getCategoryColor = (category) => {
+    switch (category?.toLowerCase()) {
+      case 'profanity':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'slur':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'bullying':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'sexual':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'other':
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <FiList className="text-[#015763]" />
-          Master Word List
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Manage the dictionary of words and phrases for content moderation
-        </p>
-      </div>
-
-      {/* Search and Controls */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-          <div className="flex-1 flex gap-3 w-full">
-            <div className="relative flex-1">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search words…"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#015763] focus:border-transparent"
-              />
-            </div>
-            <select
-              value={languageFilter}
-              onChange={(e) => setLanguageFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#015763] focus:border-transparent"
-            >
-              <option value="all">All Languages</option>
-              <option value="english">English</option>
-              <option value="filipino">Filipino</option>
-            </select>
-            <button onClick={loadWords} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-              <FiFilter className="h-4 w-4" /> Refresh
-            </button>
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-1">Master Word List</h1>
+            <p className="text-sm text-gray-600">
+              Manage the dictionary of words and phrases for content moderation • {filtered.length} words
+            </p>
           </div>
-          <div className="flex gap-2 w-full md:w-auto justify-end">
-            <button onClick={openAdd} className="px-4 py-2 bg-[#015763] text-white rounded-lg hover:bg-[#014a54] transition-colors flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openAdd}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
               <FiPlus className="h-4 w-4" />
               Add Word
             </button>
@@ -159,40 +150,119 @@ export default function MasterWordList() {
         </div>
       </div>
 
+      {/* Search and Filters */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search words, categories, or languages..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+
+          {/* Language Filter */}
+          <div className="flex items-center gap-2">
+            <FiFilter className="h-4 w-4 text-gray-400" />
+            <select
+              value={languageFilter}
+              onChange={(e) => setLanguageFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+            >
+              <option value="all">All Languages</option>
+              <option value="english">English</option>
+              <option value="filipino">Filipino</option>
+            </select>
+          </div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={loadWords}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+          >
+            <FiFilter className="h-4 w-4" />
+            Refresh
+          </button>
+        </div>
+      </div>
+
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+          {error}
+        </div>
       )}
 
       {/* Word List Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full">
+            <thead className="border-b border-gray-200 bg-gray-50/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Word</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Word
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Language
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
               {isLoading ? (
-                <tr><td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>Loading words…</td></tr>
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={4}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Loading words...
+                    </div>
+                  </td>
+                </tr>
               ) : filtered.length === 0 ? (
-                <tr><td className="px-6 py-4 text-sm text-gray-500" colSpan={4}>No results.</td></tr>
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={4}>
+                    {searchTerm || languageFilter !== 'all' ? 'No words match your search criteria.' : 'No words found. Add your first word to get started.'}
+                  </td>
+                </tr>
               ) : (
                 filtered.map((w) => (
-                  <tr key={w.id || w._id || `${w.word}-${w.language}`} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm text-gray-900">{w.word}</td>
-                    <td className="px-6 py-3 text-sm text-gray-900">{w.language}</td>
-                    <td className="px-6 py-3 text-sm text-gray-900">{w.category}</td>
-                    <td className="px-6 py-3 text-sm text-gray-900">
+                  <tr key={w.id || w._id || `${w.word}-${w.language}`} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {w.word}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                        {w.language}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getCategoryColor(w.category)}`}>
+                        {w.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="flex items-center gap-2 justify-end">
-                        <button onClick={() => openEdit(w)} className="px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-1">
-                          <FiEdit2 /> Edit
+                        <button
+                          onClick={() => openEdit(w)}
+                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Edit word"
+                        >
+                          <FiEdit2 className="h-4 w-4" />
                         </button>
-                        <button onClick={() => handleDelete(w)} className="px-3 py-1.5 border border-red-300 text-red-700 rounded-md hover:bg-red-50 flex items-center gap-1">
-                          <FiTrash2 /> Delete
+                        <button
+                          onClick={() => handleDelete(w)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          title="Delete word"
+                        >
+                          <FiTrash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -206,45 +276,63 @@ export default function MasterWordList() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="bg-white rounded-lg w-full max-w-md shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <h2 className="text-base font-semibold text-gray-900">{editing ? 'Edit Word' : 'Add Word'}</h2>
-              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-                <FiX size={20} />
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <div className="bg-white rounded-lg w-full max-w-md border border-gray-200 shadow-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editing ? 'Edit Word' : 'Add New Word'}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                disabled={saving}
+              >
+                <FiX className="h-5 w-5" />
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-4 space-y-3">
+
+            <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Word</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Word <span className="text-red-500">*</span>
+                </label>
                 <input
+                  type="text"
                   value={form.word}
                   onChange={(e) => setForm({ ...form, word: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
-                  placeholder="Enter word"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Enter word or phrase"
                   required
+                  disabled={saving}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Language</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Language <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={form.language}
                     onChange={(e) => setForm({ ...form, language: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
                     required
+                    disabled={saving}
                   >
                     <option value="English">English</option>
                     <option value="Filipino">Filipino</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
                     required
+                    disabled={saving}
                   >
                     <option value="profanity">Profanity</option>
                     <option value="slur">Slur</option>
@@ -254,19 +342,46 @@ export default function MasterWordList() {
                   </select>
                 </div>
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Variations (comma-separated)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Variations
+                </label>
                 <input
+                  type="text"
                   value={form.variations}
                   onChange={(e) => setForm({ ...form, variations: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#015763] focus:border-transparent"
-                  placeholder="e.g. alt1, alt2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="e.g. variant1, variant2, variant3"
+                  disabled={saving}
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Separate multiple variations with commas
+                </p>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button type="button" onClick={closeModal} className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={saving} className="px-3 py-2 bg-[#015763] text-white rounded-md hover:bg-[#014a54] disabled:opacity-50">
-                  {saving ? 'Saving…' : 'Save'}
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || !form.word.trim()}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Saving...
+                    </div>
+                  ) : (
+                    editing ? 'Update Word' : 'Add Word'
+                  )}
                 </button>
               </div>
             </form>

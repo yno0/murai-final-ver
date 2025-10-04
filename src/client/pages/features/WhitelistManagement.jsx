@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit2, Trash2, Save, X, Globe, Type } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import extensionSettingsService from '../../services/extensionSettingsService';
+import { useToastContext } from '../../contexts/ToastContext.jsx';
 
 const WhitelistManagement = () => {
   const navigate = useNavigate();
+  const toast = useToastContext();
   const [activeTab, setActiveTab] = useState('websites'); // 'websites' or 'terms'
   const [settings, setSettings] = useState({
     whitelist: { websites: [], terms: [] }
@@ -43,16 +45,11 @@ const WhitelistManagement = () => {
       const apiSettings = extensionSettingsService.convertToApiFormat(settings);
       await extensionSettingsService.updateSettings(apiSettings);
       
-      // Show success message briefly
-      const successMessage = document.createElement('div');
-      successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-      successMessage.textContent = 'Whitelist updated successfully!';
-      document.body.appendChild(successMessage);
-      setTimeout(() => document.body.removeChild(successMessage), 3000);
-      
+      toast.success('Whitelist updated successfully!');
+
     } catch (error) {
       console.error('Failed to save settings:', error);
-      setError('Failed to save whitelist settings');
+      toast.error('Failed to save whitelist settings');
     } finally {
       setIsSaving(false);
     }
@@ -68,10 +65,10 @@ const WhitelistManagement = () => {
     
     // Check for duplicates
     if (currentList.includes(trimmedItem)) {
-      setError(`This ${activeTab.slice(0, -1)} is already in the whitelist`);
+      toast.warning(`This ${activeTab.slice(0, -1)} is already in the whitelist`);
       return;
     }
-    
+
     setSettings(prev => ({
       ...prev,
       whitelist: {
@@ -79,10 +76,9 @@ const WhitelistManagement = () => {
         [activeTab]: [...currentList, trimmedItem]
       }
     }));
-    
+
     setNewItem('');
     setShowAddForm(false);
-    setError(null);
   };
 
   const removeItem = (index) => {

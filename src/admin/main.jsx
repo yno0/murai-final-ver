@@ -4,11 +4,10 @@ import AdminLayout from './layouts/AdminLayout.jsx'
 
 // Dashboard Pages
 import SystemOverview from './pages/dashboard/SystemOverview.jsx'
-import RecentActivity from './pages/dashboard/RecentActivity.jsx'
 
 // Moderation Management Pages
 import FlaggedContentLogs from './pages/moderation/FlaggedContentLogs.jsx'
-import PendingReviews from './pages/moderation/PendingReviews.jsx'
+import Reports from './pages/moderation/Reports.jsx'
 import ResolvedCases from './pages/moderation/ResolvedCases.jsx'
 import ModerationRules from './pages/moderation/ModerationRules.jsx'
 
@@ -20,7 +19,7 @@ import ExportReports from './pages/analytics/ExportReports.jsx'
 
 // Dictionary Management Pages
 import MasterWordList from './pages/dictionary/MasterWordList.jsx'
-import AddEditWords from './pages/dictionary/AddEditWords.jsx'
+import AddWords from './pages/dictionary/AddEditWords.jsx'
 
 import SynonymsVariations from './pages/dictionary/SynonymsVariations.jsx'
 import CustomLists from './pages/dictionary/CustomLists.jsx'
@@ -85,11 +84,10 @@ const router = createBrowserRouter([
 
       // Dashboard
       { path: 'dashboard/overview', element: <SystemOverview /> },
-      { path: 'dashboard/activity', element: <RecentActivity /> },
 
       // Moderation Management
       { path: 'moderation/flagged-content', element: <FlaggedContentLogs /> },
-      { path: 'moderation/pending-reviews', element: <PendingReviews /> },
+      { path: 'moderation/reports', element: <Reports /> },
       { path: 'moderation/resolved-cases', element: <ResolvedCases /> },
       { path: 'moderation/rules', element: <ModerationRules /> },
 
@@ -101,7 +99,7 @@ const router = createBrowserRouter([
 
       // Dictionary Management
       { path: 'dictionary/master-list', element: <MasterWordList /> },
-      { path: 'dictionary/add-edit', element: <AddEditWords /> },
+      { path: 'dictionary/add-words', element: <AddWords /> },
 
       { path: 'dictionary/synonyms', element: <SynonymsVariations /> },
       { path: 'dictionary/custom-lists', element: <CustomLists /> },

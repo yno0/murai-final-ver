@@ -11,9 +11,11 @@ import {
   FiX,
   FiCheck,
   FiAlertCircle,
-  FiRefreshCw
+  FiRefreshCw,
+  FiSearch,
+  FiFilter
 } from 'react-icons/fi';
-import adminApi from '../../services/adminApi.js';
+import adminApiService from '../../services/adminApi.js';
 
 export default function RolePermissions() {
   const [admins, setAdmins] = useState([]);
@@ -21,7 +23,11 @@ export default function RolePermissions() {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(null);
   const [editingAdmin, setEditingAdmin] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [tempPermissions, setTempPermissions] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
 
   // Available permissions with descriptions
   const availablePermissions = [
@@ -100,7 +106,7 @@ export default function RolePermissions() {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const response = await adminApi.getAdmins({
+      const response = await adminApiService.getAdmins({
         limit: 100, // Get all admins for role management
         sortBy: 'name',
         sortOrder: 'asc'
@@ -149,7 +155,7 @@ export default function RolePermissions() {
   const savePermissions = async (adminId) => {
     try {
       setSaving(adminId);
-      const response = await adminApi.updateAdminPermissions(adminId, tempPermissions);
+      const response = await adminApiService.updateAdminPermissions(adminId, tempPermissions);
 
       if (response.success) {
         // Update local state
@@ -171,47 +177,81 @@ export default function RolePermissions() {
     }
   };
 
-  // Get role badge color
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'super_admin': return 'bg-purple-100 text-purple-800';
-      case 'admin': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   // Get status badge color
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-yellow-100 text-yellow-800';
-      case 'suspended': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-green-50 text-green-700 border border-green-200';
+      case 'inactive': return 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+      case 'suspended': return 'bg-red-50 text-red-700 border border-red-200';
+      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
+  };
+
+  // Get role badge color
+  const getRoleBadgeColor = (role) => {
+    switch (role) {
+      case 'super_admin': return 'bg-purple-50 text-purple-700 border border-purple-200';
+      case 'admin': return 'bg-blue-50 text-blue-700 border border-blue-200';
+      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+    }
+  };
+
+  // Filter admins based on search and role
+  const filteredAdmins = admins.filter(admin => {
+    const matchesSearch = !searchTerm ||
+      admin.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      admin.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesRole = roleFilter === 'all' || admin.role === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
+  // Handle edit permissions
+  const handleEditPermissions = (admin) => {
+    setSelectedAdmin(admin);
+    setShowPermissionModal(true);
   };
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <FiKey className="text-[#015763]" />
-          Role & Permission Settings
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Configure roles and permissions for administrator accounts
-        </p>
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <FiKey className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900 mb-1">Role & Permission Settings</h1>
+              <p className="text-sm text-gray-600">
+                Configure administrator roles and permissions • {admins.length} admin accounts
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchAdmins}
+              disabled={loading}
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:border-gray-400 transition-colors flex items-center gap-2"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
-          <FiAlertCircle className="text-red-600 flex-shrink-0" />
-          <span className="text-red-700">{error}</span>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 flex items-center gap-2">
+          <FiAlertCircle className="text-red-600 flex-shrink-0 h-4 w-4" />
+          <span className="text-red-700 text-sm">{error}</span>
           <button
             onClick={() => setError(null)}
             className="ml-auto text-red-600 hover:text-red-800"
           >
-            ×
+            <FiX className="h-4 w-4" />
           </button>
         </div>
       )}
@@ -219,16 +259,18 @@ export default function RolePermissions() {
       {/* Permission Categories Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Object.entries(permissionsByCategory).map(([category, permissions]) => (
-          <div key={category} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <FiShield className="h-5 w-5 text-[#015763]" />
-              <h3 className="text-lg font-medium text-gray-900">{category}</h3>
+          <div key={category} className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <FiShield className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {permissions.map((permission) => (
-                <div key={permission.id} className="text-sm">
-                  <div className="font-medium text-gray-900">{permission.name}</div>
-                  <div className="text-gray-600">{permission.description}</div>
+                <div key={permission.id} className="p-3 bg-gray-50 rounded-md border border-gray-100">
+                  <div className="font-medium text-gray-900 text-sm">{permission.name}</div>
+                  <div className="text-gray-600 text-xs mt-1">{permission.description}</div>
                 </div>
               ))}
             </div>
@@ -236,163 +278,136 @@ export default function RolePermissions() {
         ))}
       </div>
 
-      {/* Administrators Permissions Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">
-            Administrator Permissions
-          </h3>
-          <button
-            onClick={fetchAdmins}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
-          >
-            <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+      {/* Search and Filter for Admins */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search administrators by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <FiFilter className="h-4 w-4 text-gray-400" />
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+            >
+              <option value="all">All Roles</option>
+              <option value="super_admin">Super Admin</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
         </div>
+      </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <FiRefreshCw className="h-8 w-8 text-[#015763] animate-spin" />
-            <span className="ml-2 text-gray-600">Loading administrators...</span>
-          </div>
-        ) : admins.length === 0 ? (
-          <div className="text-center py-12">
-            <FiUser className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No administrators found</h3>
-            <p className="text-gray-600">No administrators have been created yet.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+      {/* Administrators Permissions Table */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="border-b border-gray-200 bg-gray-50/50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Administrator
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Permissions
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {loading ? (
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Administrator
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Permissions
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Loading administrators...
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {admins.map((admin) => (
-                  <tr key={admin._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-[#015763] flex items-center justify-center">
-                            <span className="text-sm font-medium text-white">
-                              {admin.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+              ) : filteredAdmins.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-8 text-center text-sm text-gray-500" colSpan={5}>
+                    {searchTerm || roleFilter !== 'all'
+                      ? 'No administrators match your search criteria.'
+                      : 'No administrators found. Create admin accounts to manage permissions.'
+                    }
+                  </td>
+                </tr>
+              ) : (
+                filteredAdmins.map((admin) => (
+                  <tr key={admin._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <span className="text-sm font-medium text-blue-700">
+                            {admin.name?.charAt(0)?.toUpperCase() || 'A'}
+                          </span>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{admin.name}</div>
-                          <div className="text-sm text-gray-500">{admin.email}</div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{admin.name || 'Unknown Admin'}</div>
+                          <div className="text-sm text-gray-600">{admin.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(admin.role)}`}>
-                        {admin.role.replace('_', ' ')}
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getRoleBadgeColor(admin.role)}`}>
+                        {admin.role?.replace('_', ' ') || 'Unknown'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(admin.status)}`}>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getStatusBadgeColor(admin.status)}`}>
                         {admin.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {editingAdmin === admin._id ? (
-                        <div className="space-y-3 max-w-md">
-                          {Object.entries(permissionsByCategory).map(([category, permissions]) => (
-                            <div key={category}>
-                              <h4 className="text-xs font-medium text-gray-700 mb-1">{category}</h4>
-                              <div className="space-y-1">
-                                {permissions.map((permission) => (
-                                  <label key={permission.id} className="flex items-center space-x-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={tempPermissions.includes(permission.id)}
-                                      onChange={() => togglePermission(permission.id)}
-                                      className="rounded border-gray-300 text-[#015763] focus:ring-[#015763] h-3 w-3"
-                                    />
-                                    <span className="text-xs text-gray-700">{permission.name}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {admin.permissions && admin.permissions.length > 0 ? (
-                            admin.permissions.map((permissionId) => {
-                              const permission = availablePermissions.find(p => p.id === permissionId);
-                              return permission ? (
-                                <span
-                                  key={permissionId}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-1 mb-1"
-                                >
-                                  <FiCheck className="h-3 w-3 mr-1" />
-                                  {permission.name}
-                                </span>
-                              ) : null;
-                            })
-                          ) : (
-                            <span className="text-sm text-gray-500">No permissions assigned</span>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex flex-wrap gap-1">
+                        {admin.permissions?.slice(0, 3).map((permission) => (
+                          <span
+                            key={permission}
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-700"
+                          >
+                            {permission.replace('_', ' ')}
+                          </span>
+                        ))}
+                        {admin.permissions?.length > 3 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-700">
+                            +{admin.permissions.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {editingAdmin === admin._id ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => savePermissions(admin._id)}
-                            disabled={saving === admin._id}
-                            className="text-green-600 hover:text-green-800 p-1"
-                            title="Save Changes"
-                          >
-                            <FiSave className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={cancelEditing}
-                            disabled={saving === admin._id}
-                            className="text-gray-600 hover:text-gray-800 p-1"
-                            title="Cancel"
-                          >
-                            <FiX className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 justify-end">
                         <button
-                          onClick={() => startEditing(admin)}
-                          disabled={admin.status !== 'active'}
-                          className="text-[#015763] hover:text-[#014a54] p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleEditPermissions(admin)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                           title="Edit Permissions"
                         >
                           <FiEdit className="h-4 w-4" />
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

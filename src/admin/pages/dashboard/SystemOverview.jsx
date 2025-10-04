@@ -52,40 +52,53 @@ export default function SystemOverview() {
     return `${sign}${Math.abs(growth)}%`;
   };
 
+  const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
-      <div className="bg-gradient-to-r from-[#015763] to-[#023a42] rounded-lg p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {adminUser?.name || 'Administrator'}!
-        </h1>
-        <p className="text-[#a0d4db]">
-          Last login: {adminUser?.lastLogin ? new Date(adminUser.lastLogin).toLocaleString() : 'First time login'}
-        </p>
-      </div>
-
-      {/* Page Header */}
-      <div className="border-b border-gray-200 pb-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <FiEye className="text-[#015763]" />
-              System Overview
+            <h1 className="text-xl font-semibold text-gray-900">
+              Good {getTimeOfDay()}, {adminUser?.name || 'Administrator'}
             </h1>
-            <p className="text-gray-600 mt-1">
-              Monitor key metrics and system health across the MURAi platform
+            <p className="text-sm text-gray-600 mt-1">
+              Here's what's happening with your MURAi system today
             </p>
           </div>
-          <button
-            onClick={fetchDashboardData}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-[#015763] text-white rounded-lg hover:bg-[#023a42] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-xs text-gray-500">
+                {new Date().toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Last updated: {new Date().toLocaleTimeString()}
+              </p>
+            </div>
+            <button
+              onClick={fetchDashboardData}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
+
+
 
       {/* Loading State */}
       {loading && (
@@ -99,7 +112,7 @@ export default function SystemOverview() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <div className="flex items-center gap-2">
             <FiAlertTriangle className="h-5 w-5 text-red-500" />
             <span className="text-red-700 font-medium">Error loading dashboard</span>
@@ -107,7 +120,7 @@ export default function SystemOverview() {
           <p className="text-red-600 mt-1">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="mt-3 inline-flex items-center px-4 py-2 border border-red-300 rounded-lg bg-red-600 text-white hover:bg-red-700 hover:border-red-400 transition-colors"
           >
             Try Again
           </button>
@@ -116,8 +129,8 @@ export default function SystemOverview() {
 
       {/* Key Metrics Grid */}
       {!loading && !error && dashboardData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Users</p>
@@ -128,11 +141,13 @@ export default function SystemOverview() {
                   {getGrowthText(dashboardData.metrics.totalUsers.growth, dashboardData.metrics.totalUsers.trend)} from last month
                 </p>
               </div>
-              <FiUsers className="h-8 w-8 text-[#015763]" />
+              <div className="rounded-md border border-gray-200 p-2">
+                <FiUsers className="h-6 w-6 text-[#015763]" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Content Flagged Today</p>
@@ -143,11 +158,13 @@ export default function SystemOverview() {
                   {getGrowthText(dashboardData.metrics.flaggedToday.growth, dashboardData.metrics.flaggedToday.trend)} from yesterday
                 </p>
               </div>
-              <FiShield className="h-8 w-8 text-[#015763]" />
+              <div className="rounded-md border border-gray-200 p-2">
+                <FiShield className="h-6 w-6 text-[#015763]" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Extensions</p>
@@ -158,11 +175,13 @@ export default function SystemOverview() {
                   {getGrowthText(dashboardData.metrics.activeExtensions.growth, dashboardData.metrics.activeExtensions.trend)} from last week
                 </p>
               </div>
-              <FiActivity className="h-8 w-8 text-[#015763]" />
+              <div className="rounded-md border border-gray-200 p-2">
+                <FiActivity className="h-6 w-6 text-[#015763]" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Detection Accuracy</p>
@@ -173,7 +192,9 @@ export default function SystemOverview() {
                   +{dashboardData.metrics.detectionAccuracy.growth}% improvement
                 </p>
               </div>
-              <FiTrendingUp className="h-8 w-8 text-[#015763]" />
+              <div className="rounded-md border border-gray-200 p-2">
+                <FiTrendingUp className="h-6 w-6 text-[#015763]" />
+              </div>
             </div>
           </div>
         </div>
@@ -181,29 +202,29 @@ export default function SystemOverview() {
 
       {/* System Status */}
       {!loading && !error && dashboardData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">System Health</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <span className="text-sm text-gray-600">API Response Time</span>
                 <span className="text-sm font-medium text-green-600">
                   {dashboardData.systemHealth.apiResponseTime}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <span className="text-sm text-gray-600">Database Performance</span>
                 <span className="text-sm font-medium text-green-600">
                   {dashboardData.systemHealth.databaseStatus}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <span className="text-sm text-gray-600">AI Model Status</span>
                 <span className="text-sm font-medium text-green-600">
                   {dashboardData.systemHealth.aiModelStatus}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                 <span className="text-sm text-gray-600">Extension Sync</span>
                 <span className="text-sm font-medium text-green-600">
                   {dashboardData.systemHealth.extensionSync}
@@ -212,12 +233,12 @@ export default function SystemOverview() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Alerts</h3>
             <div className="space-y-3">
               {dashboardData.recentAlerts.length > 0 ? (
                 dashboardData.recentAlerts.map((alert) => (
-                  <div key={alert.id} className="flex items-start gap-3">
+                  <div key={alert.id} className="flex items-start gap-3 p-3 rounded-md border border-gray-100 hover:border-gray-200 transition-colors">
                     <FiAlertTriangle className={`h-4 w-4 mt-0.5 ${
                       alert.severity === 'high' ? 'text-red-500' :
                       alert.severity === 'medium' ? 'text-yellow-500' :
@@ -233,7 +254,7 @@ export default function SystemOverview() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4">
+                <div className="text-center py-8 border border-dashed border-gray-200 rounded-md">
                   <p className="text-sm text-gray-500">No recent alerts</p>
                 </div>
               )}
@@ -244,27 +265,33 @@ export default function SystemOverview() {
 
       {/* Quick Actions */}
       {!loading && !error && dashboardData && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 hover:border-gray-300 transition-colors">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-              <FiShield className="h-6 w-6 text-[#015763] mb-2" />
+            <button className="group p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all text-left">
+              <div className="rounded-md border border-gray-200 p-2 w-fit mb-3 group-hover:border-gray-300 transition-colors">
+                <FiShield className="h-5 w-5 text-[#015763]" />
+              </div>
               <h4 className="font-medium text-gray-900">Review Pending Cases</h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 mt-1">
                 {dashboardData.quickActions.pendingCases} cases awaiting review
               </p>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-              <FiUsers className="h-6 w-6 text-[#015763] mb-2" />
+            <button className="group p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all text-left">
+              <div className="rounded-md border border-gray-200 p-2 w-fit mb-3 group-hover:border-gray-300 transition-colors">
+                <FiUsers className="h-5 w-5 text-[#015763]" />
+              </div>
               <h4 className="font-medium text-gray-900">Manage Users</h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 mt-1">
                 {formatNumber(dashboardData.quickActions.totalUsers)} total users
               </p>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-              <FiActivity className="h-6 w-6 text-[#015763] mb-2" />
+            <button className="group p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all text-left">
+              <div className="rounded-md border border-gray-200 p-2 w-fit mb-3 group-hover:border-gray-300 transition-colors">
+                <FiActivity className="h-5 w-5 text-[#015763]" />
+              </div>
               <h4 className="font-medium text-gray-900">View Analytics</h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 mt-1">
                 {dashboardData.quickActions.flaggedToday} flagged today
               </p>
             </button>

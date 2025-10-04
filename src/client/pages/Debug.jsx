@@ -73,7 +73,6 @@ export default function Debug() {
       const testSettings = {
         enabled: true,
         language: 'Both',
-        sensitivity: 'medium',
         flaggingStyle: 'highlight',
         highlightColor: '#374151',
         whitelist: {

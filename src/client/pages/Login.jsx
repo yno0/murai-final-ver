@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Logo from "../../shared/assets/LogoMain.svg";
 import authService from '../services/authService.js';
+import { ToastProvider, useToastContext } from '../contexts/ToastContext.jsx';
 
 import GoogleAuthButton from '../components/GoogleAuthButton.jsx';
 
-export default function Login() {
+function LoginForm() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const [isFromExtension, setIsFromExtension] = useState(false);
+    const toast = useToastContext();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -31,24 +32,27 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setIsLoading(true);
 
         try {
             const response = await authService.login(formData);
 
             if (response.success) {
-                if (isFromExtension) {
-                    // Redirect to extension success page
-                    navigate('/extension-success');
-                } else {
-                    // Redirect to dashboard for normal login
-                    navigate('/client/dashboard');
-                }
+                toast.success('Login successful!');
+                // Add a small delay to let the user see the success toast
+                setTimeout(() => {
+                    if (isFromExtension) {
+                        // Redirect to extension success page
+                        navigate('/extension-success');
+                    } else {
+                        // Redirect to dashboard for normal login
+                        navigate('/client/dashboard');
+                    }
+                }, 1500); // 1.5 second delay
             }
         } catch (error) {
             console.error('Login error:', error);
-            setError(error.message || 'Login failed. Please try again.');
+            toast.error(error.message || 'Login failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -67,7 +71,9 @@ export default function Login() {
 
             <div className="w-full lg:w-1/2 h-full bg-white px-8 md:px-16 xl:px-24 flex flex-col">
                 <div className="pt-8 pb-16 flex justify-center">
-                    <img src={Logo} alt="Logo" className="w-18 h-12 object-contain" />
+                    <Link to="/">
+                        <img src={Logo} alt="Logo" className="w-18 h-12 object-contain hover:opacity-80 transition-opacity" />
+                    </Link>
                 </div>
                 
                 <div className="flex-grow flex items-center justify-center">
@@ -97,13 +103,6 @@ export default function Login() {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Error message */}
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                    {error}
-                                </div>
-                            )}
-
                             <div className="space-y-2">
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                     Email
@@ -199,5 +198,13 @@ export default function Login() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function Login() {
+    return (
+        <ToastProvider>
+            <LoginForm />
+        </ToastProvider>
     );
 }

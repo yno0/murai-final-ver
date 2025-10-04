@@ -1,6 +1,6 @@
 class AdminApiService {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    this.baseURL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
     this.adminBaseURL = `${this.baseURL}/admin`;
   }
 
@@ -201,9 +201,25 @@ class AdminApiService {
 
   // Moderation API methods
   async getFlaggedContent(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    console.log('🔍 AdminAPI: getFlaggedContent called with params:', params);
+
+    // Filter out undefined, null, and empty string values before creating URLSearchParams
+    const filteredParams = {};
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+        filteredParams[key] = params[key];
+      }
+    });
+
+    console.log('🔍 AdminAPI: Filtered params (removing undefined/null/empty):', filteredParams);
+
+    const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = queryString ? `/moderation/flagged?${queryString}` : '/moderation/flagged';
-    return this.request(endpoint);
+    console.log('🔍 AdminAPI: Making request to endpoint:', endpoint);
+    console.log('🔍 AdminAPI: Auth token available:', !!this.getToken());
+    const result = await this.request(endpoint);
+    console.log('🔍 AdminAPI: getFlaggedContent result:', result);
+    return result;
   }
 
   async updateFlaggedContent(id, updateData) {
@@ -222,6 +238,39 @@ class AdminApiService {
 
   async getReportById(id) {
     return this.request(`/reports/${id}`);
+  }
+
+  async exportReports(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/reports/export?${queryString}` : '/reports/export';
+
+    const response = await fetch(`${this.adminBaseURL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed: ${response.statusText}`);
+    }
+
+    return response.text(); // Return CSV text
+  }
+
+  async updateReportStatus(id, status, notes = '') {
+    return this.request(`/reports/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, notes }),
+    });
+  }
+
+  async resolveReport(id, resolution) {
+    return this.request(`/reports/${id}/resolve`, {
+      method: 'PUT',
+      body: JSON.stringify(resolution),
+    });
   }
 
   // Logs API methods
@@ -389,6 +438,105 @@ class AdminApiService {
       method: 'PUT',
       body: JSON.stringify(settings),
     });
+  }
+
+  // ===== INTEGRATION MANAGEMENT API METHODS =====
+
+  // Domain Management
+  async getDomains(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/integrations/domains?${queryString}` : '/integrations/domains';
+    return this.request(endpoint);
+  }
+
+  async getDomainById(domainId) {
+    return this.request(`/integrations/domains/${domainId}`);
+  }
+
+  async createDomain(domainData) {
+    return this.request('/integrations/domains', {
+      method: 'POST',
+      body: JSON.stringify(domainData),
+    });
+  }
+
+  async updateDomain(domainId, domainData) {
+    return this.request(`/integrations/domains/${domainId}`, {
+      method: 'PUT',
+      body: JSON.stringify(domainData),
+    });
+  }
+
+  async deleteDomain(domainId) {
+    return this.request(`/integrations/domains/${domainId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getDomainStats() {
+    return this.request('/integrations/domains/stats');
+  }
+
+  // API Key Management
+  async getApiKeys(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/integrations/api-keys?${queryString}` : '/integrations/api-keys';
+    return this.request(endpoint);
+  }
+
+  async createApiKey(keyData) {
+    return this.request('/integrations/api-keys', {
+      method: 'POST',
+      body: JSON.stringify(keyData),
+    });
+  }
+
+  async updateApiKey(keyId, keyData) {
+    return this.request(`/integrations/api-keys/${keyId}`, {
+      method: 'PUT',
+      body: JSON.stringify(keyData),
+    });
+  }
+
+  async revokeApiKey(keyId, reason = '') {
+    return this.request(`/integrations/api-keys/${keyId}/revoke`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async deleteApiKey(keyId) {
+    return this.request(`/integrations/api-keys/${keyId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Integration Logs
+  async getIntegrationLogs(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/integrations/logs?${queryString}` : '/integrations/logs';
+    return this.request(endpoint);
+  }
+
+  async getIntegrationLogStats(timeframe = '24h') {
+    return this.request(`/integrations/logs/stats?timeframe=${timeframe}`);
+  }
+
+  // Usage Statistics
+  async getUsageStatistics(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/integrations/usage-stats?${queryString}` : '/integrations/usage-stats';
+    return this.request(endpoint);
+  }
+
+  async getUsageStatsSummary(timeframe = '24h') {
+    return this.request(`/integrations/usage-stats/summary?timeframe=${timeframe}`);
+  }
+
+  async getTopPerformers(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/integrations/usage-stats/top-performers?${queryString}` : '/integrations/usage-stats/top-performers';
+    return this.request(endpoint);
   }
 }
 

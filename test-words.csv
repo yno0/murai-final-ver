@@ -1,0 +1,6 @@
+word,language,category
+testword1,English,profanity
+testword2,Filipino,slur
+badexample,English,bullying
+inappropriate,English,sexual
+spam123,English,other
