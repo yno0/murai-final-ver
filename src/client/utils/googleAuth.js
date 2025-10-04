@@ -5,9 +5,14 @@
  * @returns {string} The Google OAuth URL
  */
 export const getGoogleAuthUrl = () => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  const baseUrl = apiUrl.replace('/api', '');
-  return `${baseUrl}/api/auth/google`;
+  // In production, use relative URLs. In development, use localhost
+  if (import.meta.env.PROD) {
+    return '/api/auth/google';
+  } else {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const baseUrl = apiUrl.replace('/api', '');
+    return `${baseUrl}/api/auth/google`;
+  }
 };
 
 /**
