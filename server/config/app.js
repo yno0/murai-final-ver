@@ -4,6 +4,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import session from "express-session";
 import path from "path";
+import fs from "fs";
 import passport from './passport.js';
 
 // Import middleware
@@ -110,9 +111,27 @@ export function createApp() {
 
     // Serve static files from frontend build (if SERVE_FRONTEND is enabled)
     if (process.env.SERVE_FRONTEND === 'true') {
-        const frontendPath = path.join(process.cwd(), '..', 'dist');
+        const frontendPath = path.join(__dirname, '..', '..', 'dist');
         console.log('🌐 Serving frontend from:', frontendPath);
-        app.use(express.static(frontendPath));
+        console.log('🔍 Current working directory:', process.cwd());
+        console.log('🔍 __dirname:', __dirname);
+
+        // Check if dist folder exists
+        if (fs.existsSync(frontendPath)) {
+            console.log('✅ Frontend dist folder found');
+            app.use(express.static(frontendPath));
+        } else {
+            console.log('❌ Frontend dist folder not found at:', frontendPath);
+            // Try alternative path
+            const altPath = path.join(process.cwd(), 'dist');
+            console.log('🔍 Trying alternative path:', altPath);
+            if (fs.existsSync(altPath)) {
+                console.log('✅ Frontend found at alternative path');
+                app.use(express.static(altPath));
+            } else {
+                console.log('❌ Frontend not found at alternative path either');
+            }
+        }
     }
 
     // Health check endpoint
@@ -162,10 +181,18 @@ export function createApp() {
             }
 
             // Serve React app for all other routes
-            const frontendPath = path.join(process.cwd(), '..', 'dist', 'index.html');
-            res.sendFile(frontendPath, (err) => {
+            let frontendIndexPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
+
+            // Check if index.html exists, try alternative path if not
+            if (!fs.existsSync(frontendIndexPath)) {
+                frontendIndexPath = path.join(process.cwd(), 'dist', 'index.html');
+            }
+
+            console.log('🔍 Serving index.html from:', frontendIndexPath);
+            res.sendFile(frontendIndexPath, (err) => {
                 if (err) {
                     logger.error('Error serving frontend:', err);
+                    console.log('❌ Failed to serve index.html from:', frontendIndexPath);
                     ResponseUtil.error(res, "Frontend not available", 500);
                 }
             });

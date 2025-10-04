@@ -9,6 +9,8 @@ services:
       npm install
       echo "Building frontend..."
       npm run build
+      echo "Checking build output..."
+      ls -la dist/
       echo "Installing server dependencies..."
       cd server && npm install --production
     startCommand: cd server && npm start
