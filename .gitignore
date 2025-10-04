@@ -2,7 +2,8 @@
 node_modules/
 server/node_modules/
 
-# Build outputs (keep dist for deployment)
+# Build outputs
+dist/
 dist-ssr
 *.local
 
