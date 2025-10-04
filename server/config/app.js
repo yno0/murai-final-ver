@@ -5,7 +5,13 @@ import rateLimit from "express-rate-limit";
 import session from "express-session";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import passport from './passport.js';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Import middleware
 import { corsConfig } from './cors.js';
