@@ -16,9 +16,12 @@ services:
       echo "📁 Full project structure:"
       find . -name "dist" -type d
       find . -name "index.html" -type f
+      echo "Copying dist to server directory for easier access..."
+      cp -r dist server/
       echo "Installing server dependencies..."
       cd server && npm install --production
       echo "🔍 Final server directory: $(pwd)"
+      echo "📁 Server directory contents: $(ls -la)"
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV

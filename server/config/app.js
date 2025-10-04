@@ -122,11 +122,12 @@ export function createApp() {
 
         // Try multiple possible paths for the dist folder
         const possiblePaths = [
+            path.join(__dirname, '..', 'dist'),                 // server/config -> server/dist (copied during build)
             path.join(__dirname, '..', '..', 'dist'),           // server/config -> root/dist
+            path.join(process.cwd(), 'dist'),                   // server/dist (if cwd is server)
             path.join(process.cwd(), '..', 'dist'),             // server -> root/dist
-            path.join(process.cwd(), 'dist'),                   // if cwd is root
-            path.join(__dirname, '..', 'dist'),                 // server/config -> server/dist
-            '/opt/render/project/src/dist'                      // Render absolute path
+            '/opt/render/project/src/dist',                     // Render absolute path
+            '/opt/render/project/src/server/dist'               // Render server/dist path
         ];
 
         let frontendPath = null;
@@ -208,11 +209,12 @@ export function createApp() {
 
             // Serve React app for all other routes
             const possibleIndexPaths = [
-                path.join(__dirname, '..', '..', 'dist', 'index.html'),
-                path.join(process.cwd(), '..', 'dist', 'index.html'),
-                path.join(process.cwd(), 'dist', 'index.html'),
-                path.join(__dirname, '..', 'dist', 'index.html'),
-                '/opt/render/project/src/dist/index.html'
+                path.join(__dirname, '..', 'dist', 'index.html'),                 // server/config -> server/dist/index.html
+                path.join(__dirname, '..', '..', 'dist', 'index.html'),           // server/config -> root/dist/index.html
+                path.join(process.cwd(), 'dist', 'index.html'),                   // server/dist/index.html
+                path.join(process.cwd(), '..', 'dist', 'index.html'),             // server -> root/dist/index.html
+                '/opt/render/project/src/dist/index.html',                        // Render absolute path
+                '/opt/render/project/src/server/dist/index.html'                  // Render server/dist path
             ];
 
             let frontendIndexPath = null;
