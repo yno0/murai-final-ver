@@ -7,7 +7,7 @@ services:
     buildCommand: |
       echo "🔍 Current directory: $(pwd)"
       echo "📁 Directory contents: $(ls -la)"
-      echo "Installing frontend dependencies..."
+      echo "Installing frontend dependencies (including dev dependencies for build)..."
       npm install
       echo "Building frontend..."
       npm run build
