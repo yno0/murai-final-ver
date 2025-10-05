@@ -85,10 +85,10 @@ export const updateSettings = async (req, res) => {
             });
         }
 
-        if (flaggingStyle && !['blur', 'highlight', 'asterisk', 'underline', 'none'].includes(flaggingStyle)) {
+        if (flaggingStyle && !['blur', 'highlight', 'asterisk'].includes(flaggingStyle)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid flagging style'
+                message: 'Invalid flagging style. Allowed: blur, highlight, asterisk'
             });
         }
 

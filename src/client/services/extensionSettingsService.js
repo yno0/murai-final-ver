@@ -128,8 +128,8 @@ class ExtensionSettingsService {
 
 
 
-    if (settings.flaggingStyle && !['blur', 'highlight', 'asterisk', 'underline', 'none'].includes(settings.flaggingStyle)) {
-      errors.push('Invalid flagging style');
+    if (settings.flaggingStyle && !['blur', 'highlight', 'asterisk'].includes(settings.flaggingStyle)) {
+      errors.push('Invalid flagging style. Allowed: blur, highlight, asterisk');
     }
 
     if (settings.highlightColor && !/^#[0-9A-F]{6}$/i.test(settings.highlightColor)) {

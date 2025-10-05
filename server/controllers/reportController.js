@@ -6,10 +6,15 @@ import { v4 as uuidv4 } from 'uuid';
 // Create a new report
 export const createReport = async (req, res) => {
     try {
+        console.log('📝 ===== CREATE REPORT CONTROLLER =====');
+        console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+        console.log('📝 User ID:', req.user._id);
+
         const { detectionId, reason, details, severity = 'medium', reportSource = 'modal' } = req.body;
 
         // Validate required fields
         if (!detectionId || !reason) {
+            console.log('❌ Missing required fields:', { detectionId: !!detectionId, reason: !!reason });
             return res.status(400).json({
                 success: false,
                 message: "Detection ID and reason are required"
@@ -31,7 +36,25 @@ export const createReport = async (req, res) => {
         }
 
         // Generate report ID
-        const reportId = `rpt_${Date.now()}_${uuidv4().substr(0, 8)}`;
+        const reportId = `rpt_${Date.now()}_${uuidv4().substring(0, 8)}`;
+
+        // Determine category based on reason
+        const getCategoryFromReason = (reason) => {
+            switch (reason) {
+                case 'false-positive':
+                case 'missed-context':
+                case 'too-sensitive':
+                case 'inappropriate-flagging':
+                case 'language-misidentification':
+                    return 'accuracy';
+                case 'technical-issue':
+                    return 'technical';
+                default:
+                    return 'user_experience';
+            }
+        };
+
+        const category = getCategoryFromReason(reason);
 
         // Create report document
         const report = new Report({
@@ -40,6 +63,7 @@ export const createReport = async (req, res) => {
             userId: req.user._id,
             reason,
             details: details || '',
+            category,
             severity,
             metadata: {
                 browserInfo: {
@@ -57,10 +81,18 @@ export const createReport = async (req, res) => {
             }
         });
 
-        await report.save();
+        console.log('💾 Saving report to database...');
+        const savedReport = await report.save();
+        console.log('✅ Report saved successfully:', {
+            reportId: savedReport.reportId,
+            _id: savedReport._id,
+            category: savedReport.category,
+            reason: savedReport.reason
+        });
 
         // Update flagged content status to reported
         await flaggedContent.markAsReviewed(req.user._id, `Reported: ${reason}`);
+        console.log('✅ Flagged content marked as reviewed');
 
         // Log the report creation
         await Log.createLog({
@@ -90,7 +122,7 @@ export const createReport = async (req, res) => {
 
     } catch (error) {
         console.error('Error creating report:', error);
-        
+
         // Handle duplicate report ID
         if (error.code === 11000 && error.keyPattern?.reportId) {
             return res.status(409).json({
@@ -102,6 +134,110 @@ export const createReport = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Failed to create report",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+// Create a direct report without requiring existing flagged content
+export const createDirectReport = async (req, res) => {
+    try {
+        console.log('📝 ===== CREATE DIRECT REPORT CONTROLLER =====');
+        console.log('📝 Request body:', JSON.stringify(req.body, null, 2));
+        console.log('📝 User ID:', req.user._id);
+
+        const {
+            selectedText,
+            reason,
+            details
+        } = req.body;
+
+        // Validate required fields
+        if (!selectedText || !reason) {
+            console.log('❌ Missing required fields:', { selectedText: !!selectedText, reason: !!reason });
+            return res.status(400).json({
+                success: false,
+                message: "Selected text and reason are required"
+            });
+        }
+
+        // Generate report ID
+        const reportId = `rpt_${Date.now()}_${uuidv4().substring(0, 8)}`;
+
+        // Create simplified report using the static method
+        const report = await Report.createReport({
+            reportId,
+            userId: req.user._id,
+            selectedText,
+            reason,
+            details: details || '',
+            sourceUrl: req.headers.referer || '',
+            reportType: 'manual_selection'
+        });
+
+        console.log('✅ Direct report saved successfully:', {
+            reportId: report.reportId,
+            _id: report._id,
+            reason: report.reason
+        });
+
+        // Log the report creation
+        await Log.createLog({
+            action: 'detection_reported',
+            details: `Direct report submitted: ${reason}`,
+            userId: req.user._id,
+            metadata: {
+                reportId: report.reportId,
+                reason,
+                selectedText: selectedText.substring(0, 100),
+                ip: req.ip
+            }
+        });
+
+        console.log('✅ Direct report creation completed successfully');
+
+        res.status(201).json({
+            success: true,
+            message: "Direct report submitted successfully",
+            data: {
+                reportId: report.reportId,
+                _id: report._id,
+                status: report.status,
+                createdAt: report.createdAt
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error creating direct report:', error);
+        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            code: error.code,
+            keyPattern: error.keyPattern
+        });
+
+        // Handle duplicate report ID
+        if (error.code === 11000 && error.keyPattern?.reportId) {
+            return res.status(409).json({
+                success: false,
+                message: "Report ID already exists"
+            });
+        }
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            console.error('❌ Validation error details:', error.errors);
+            return res.status(400).json({
+                success: false,
+                message: "Validation error: " + error.message,
+                error: process.env.NODE_ENV === 'development' ? error.errors : undefined
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to create direct report",
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }

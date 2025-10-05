@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Report Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea { height: 100px; resize: vertical; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Report Submission Test</h1>
+        <p>This page tests the complete report submission workflow to debug why reports aren't being saved to the database.</p>
+        
+        <div class="step">
+            <h3>Step 1: Authentication</h3>
+            <input type="email" id="email" placeholder="Email (murai@admin.com)" value="murai@admin.com">
+            <input type="password" id="password" placeholder="Password (muraitestadmin123)" value="muraitestadmin123">
+            <button onclick="authenticate()">Login</button>
+            <div id="auth-result" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Create Flagged Content</h3>
+            <textarea id="test-text" placeholder="Text to flag">This damn content contains some shit that should be flagged.</textarea>
+            <button onclick="createFlaggedContent()" id="create-btn" disabled>Create Flagged Content</button>
+            <div id="flagged-result" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Submit Report (Two Methods)</h3>
+            <select id="reason">
+                <option value="false-positive">False Positive</option>
+                <option value="missed-context">Missed Context</option>
+                <option value="too-sensitive">Too Sensitive</option>
+                <option value="technical-issue">Technical Issue</option>
+                <option value="inappropriate-flagging">Inappropriate Flagging</option>
+                <option value="language-misidentification">Language Misidentification</option>
+                <option value="other">Other</option>
+            </select>
+            <textarea id="details" placeholder="Report details (optional)">This content was flagged incorrectly. It's just a test.</textarea>
+            <button onclick="submitReport()" id="report-btn" disabled>Submit Report (Old Method)</button>
+            <button onclick="submitDirectReport()" id="direct-report-btn" disabled>Submit Direct Report (New Method)</button>
+            <div id="report-result" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Verify Database</h3>
+            <button onclick="checkReports()" id="check-btn" disabled>Check Reports in Database</button>
+            <div id="check-result" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Debug Information</h3>
+            <div id="debug-info" class="result info"></div>
+        </div>
+    </div>
+    
+    <script>
+        let authToken = null;
+        let flaggedContentId = null;
+        
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function log(message, type = 'info') {
+            const debugDiv = document.getElementById('debug-info');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        async function authenticate() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('auth-result');
+            
+            try {
+                log('🔐 Attempting authentication...');
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Authentication successful!\nToken: ${authToken.substring(0, 20)}...`;
+
+                    document.getElementById('create-btn').disabled = false;
+                    document.getElementById('direct-report-btn').disabled = false; // Enable direct report
+                    log('✅ Authentication successful');
+                } else {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Authentication failed: ${error.message}`;
+                log(`❌ Authentication failed: ${error.message}`);
+            }
+        }
+        
+        async function createFlaggedContent() {
+            const text = document.getElementById('test-text').value;
+            const resultDiv = document.getElementById('flagged-result');
+            
+            try {
+                log('📝 Creating flagged content...');
+                
+                const flaggedContentData = {
+                    language: 'English',
+                    detectedWord: 'damn',
+                    context: text,
+                    sentiment: 'neutral',
+                    confidenceScore: 0.85,
+                    sourceUrl: window.location.href,
+                    detectionMethod: 'manual_report',
+                    aiModel: 'test',
+                    processingTime: 0,
+                    severity: 'medium'
+                };
+                
+                log(`📤 Sending flagged content data: ${JSON.stringify(flaggedContentData, null, 2)}`);
+                
+                const response = await fetch(`${API_BASE}/flagged-content`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        'X-Extension-Version': '1.0.0'
+                    },
+                    body: JSON.stringify(flaggedContentData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    flaggedContentId = data.data._id;
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Flagged content created!\nID: ${flaggedContentId}`;
+                    
+                    document.getElementById('report-btn').disabled = false;
+                    log(`✅ Flagged content created with ID: ${flaggedContentId}`);
+                } else {
+                    throw new Error(data.message || 'Failed to create flagged content');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Failed to create flagged content: ${error.message}`;
+                log(`❌ Failed to create flagged content: ${error.message}`);
+            }
+        }
+        
+        async function submitReport() {
+            const reason = document.getElementById('reason').value;
+            const details = document.getElementById('details').value;
+            const resultDiv = document.getElementById('report-result');
+            
+            try {
+                log('📋 Submitting report...');
+                
+                const reportData = {
+                    detectionId: flaggedContentId,
+                    reason: reason,
+                    details: details,
+                    severity: 'medium',
+                    reportSource: 'test_page'
+                };
+                
+                log(`📤 Sending report data: ${JSON.stringify(reportData, null, 2)}`);
+                
+                const response = await fetch(`${API_BASE}/reports`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        'X-Extension-Version': '1.0.0'
+                    },
+                    body: JSON.stringify(reportData)
+                });
+                
+                const data = await response.json();
+                
+                log(`📥 Report response: ${JSON.stringify(data, null, 2)}`);
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Report submitted successfully!\nReport ID: ${data.data.reportId}\nDatabase ID: ${data.data._id}`;
+                    
+                    document.getElementById('check-btn').disabled = false;
+                    log(`✅ Report submitted successfully with ID: ${data.data.reportId}`);
+                } else {
+                    throw new Error(data.message || 'Failed to submit report');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Failed to submit report: ${error.message}`;
+                log(`❌ Failed to submit report: ${error.message}`);
+            }
+        }
+
+        async function submitDirectReport() {
+            const text = document.getElementById('test-text').value;
+            const reason = document.getElementById('reason').value;
+            const details = document.getElementById('details').value;
+            const resultDiv = document.getElementById('report-result');
+
+            try {
+                log('📋 Submitting direct report (no flagged content required)...');
+
+                const directReportData = {
+                    selectedText: text,
+                    reason: reason,
+                    details: details
+                };
+
+                log(`📤 Sending direct report data: ${JSON.stringify(directReportData, null, 2)}`);
+
+                const response = await fetch(`${API_BASE}/reports/direct`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                        'X-Extension-Version': '1.0.0'
+                    },
+                    body: JSON.stringify(directReportData)
+                });
+
+                const data = await response.json();
+
+                log(`📥 Direct report response: ${JSON.stringify(data, null, 2)}`);
+
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Direct report submitted successfully!\nReport ID: ${data.data.reportId}\nDatabase ID: ${data.data._id}`;
+
+                    document.getElementById('check-btn').disabled = false;
+                    log(`✅ Direct report submitted successfully with ID: ${data.data.reportId}`);
+                } else {
+                    throw new Error(data.message || 'Failed to submit direct report');
+                }
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Failed to submit direct report: ${error.message}`;
+                log(`❌ Failed to submit direct report: ${error.message}`);
+            }
+        }
+
+        async function checkReports() {
+            const resultDiv = document.getElementById('check-result');
+            
+            try {
+                log('🔍 Checking reports in database...');
+                
+                const response = await fetch(`${API_BASE}/reports`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Reports found in database:\n${JSON.stringify(data.data, null, 2)}`;
+                    log(`✅ Found ${data.data.reports?.length || 0} reports in database`);
+                } else {
+                    throw new Error(data.message || 'Failed to fetch reports');
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Failed to check reports: ${error.message}`;
+                log(`❌ Failed to check reports: ${error.message}`);
+            }
+        }
+        
+        // Initialize
+        log('🧪 Report submission test page loaded');
+        log('📋 Instructions:');
+        log('1. Click "Login" to authenticate');
+        log('2. Click "Create Flagged Content" to create test content');
+        log('3. Click "Submit Report" to test report submission');
+        log('4. Click "Check Reports" to verify the report was saved');
+    </script>
+</body>
+</html>

@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 
-const ExtensionHeader = ({ 
-  onSync, 
-  isLoading, 
-  syncStatus, 
+const ExtensionHeader = ({
+  onSync,
+  isLoading,
+  syncStatus,
   lastSync,
-  hasUnsavedChanges 
+  hasUnsavedChanges
 }) => {
   const [showSyncMessage, setShowSyncMessage] = useState(false);
+  const [lastSyncAttempt, setLastSyncAttempt] = useState(0);
+  const [cooldownTimer, setCooldownTimer] = useState(0);
 
   const handleSync = async () => {
+    // Rate limit check - prevent sync if called within last 10 seconds
+    const now = Date.now();
+    if (now - lastSyncAttempt < 10000) {
+      return; // Silently ignore rapid clicks
+    }
+
     setShowSyncMessage(false);
+    setLastSyncAttempt(now);
+
     try {
       await onSync();
       setShowSyncMessage(true);
@@ -20,6 +30,36 @@ const ExtensionHeader = ({
       console.error('Sync failed:', error);
     }
   };
+
+  // Check if sync button should be disabled due to rate limiting
+  const isSyncDisabled = () => {
+    const now = Date.now();
+    return isLoading || (now - lastSyncAttempt < 10000);
+  };
+
+  // Get remaining cooldown time
+  const getCooldownTime = () => {
+    const now = Date.now();
+    const remaining = Math.max(0, 10000 - (now - lastSyncAttempt));
+    return Math.ceil(remaining / 1000);
+  };
+
+  // Update cooldown timer every second
+  useEffect(() => {
+    let interval;
+    if (lastSyncAttempt > 0) {
+      interval = setInterval(() => {
+        const remaining = getCooldownTime();
+        setCooldownTimer(remaining);
+        if (remaining <= 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [lastSyncAttempt]);
 
   const getSyncStatusIcon = () => {
     switch (syncStatus.status) {
@@ -71,18 +111,21 @@ const ExtensionHeader = ({
           {/* Sync Button */}
           <button
             onClick={handleSync}
-            disabled={isLoading}
+            disabled={isSyncDisabled()}
             className={`
               inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
               transition-all duration-200
-              ${isLoading 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+              ${isSyncDisabled()
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-[#015763] text-white hover:bg-[#014a54] active:bg-[#013d47]'
               }
             `}
+            title={isSyncDisabled() && !isLoading ? `Please wait ${getCooldownTime()}s before syncing again` : ''}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Syncing...' : 'Sync Settings'}
+            {isLoading ? 'Syncing...' :
+             (getCooldownTime() > 0 && !isLoading) ? `Wait ${getCooldownTime()}s` :
+             'Sync Settings'}
           </button>
         </div>
       </div>

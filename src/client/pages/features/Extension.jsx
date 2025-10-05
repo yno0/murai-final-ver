@@ -16,6 +16,7 @@ export default function Extension() {
     detectionMode: 'term-based',
     flaggingStyle: 'highlight',
     highlightColor: '#374151',
+    showHighlight: true,
     whitelist: { websites: [], terms: [] },
     dictionary: []
   })
@@ -27,9 +28,10 @@ export default function Extension() {
   const [newWebsite, setNewWebsite] = useState('')
   const [newTerm, setNewTerm] = useState('')
   const [newWord, setNewWord] = useState('')
+  const [lastSyncTime, setLastSyncTime] = useState(0) // Rate limit protection
 
-  // Preset colors for highlight color picker
-  const presetColors = ['#374151', '#dc2626', '#ea580c', '#ca8a04', '#65a30d', '#059669', '#0891b2', '#2563eb', '#7c3aed', '#c026d3']
+  // Preset colors for highlight color picker - neutral and professional
+  const presetColors = ['#374151', '#6b7280', '#4b5563', '#1f2937', '#111827', '#dc2626', '#ea580c', '#059669', '#2563eb', '#7c3aed']
 
   // Handle setting changes
   const handleSettingChange = (key, value) => {
@@ -137,7 +139,7 @@ export default function Extension() {
     try {
       setIsLoading(true)
 
-      // Use actual extension settings service
+      // Use actual extension settings service - NO AUTO-SYNC to prevent rate limits
       const response = await extensionSettingsService.getSettings()
       const loadedSettings = extensionSettingsService.convertFromApiFormat(response.data)
 
@@ -146,7 +148,7 @@ export default function Extension() {
       setHasUnsavedChanges(false)
       setSyncStatus({
         lastSync: loadedSettings.lastSync,
-        status: loadedSettings.syncStatus
+        status: loadedSettings.syncStatus || 'synced'
       })
     } catch (e) {
       toast.error('Failed to load preferences')
@@ -166,14 +168,27 @@ export default function Extension() {
   }, [settings, checkForChanges])
 
   const handleSync = async () => {
+    // Rate limit protection - prevent sync if called within last 10 seconds
+    const now = Date.now()
+    if (now - lastSyncTime < 10000) {
+      toast.warning('Please wait before syncing again (rate limit protection)')
+      return
+    }
+
     setSyncStatus((prev) => ({ ...prev, status: 'syncing' }))
+    setLastSyncTime(now)
+
     try {
-      console.log('🔄 Starting sync process...')
+      console.log('🔄 Starting manual sync process...')
       console.log('Last sync timestamp:', syncStatus.lastSync)
 
       // Check if user is authenticated
       const token = localStorage.getItem('token')
       console.log('Token available for sync:', !!token)
+
+      if (!token) {
+        throw new Error('No authentication token available')
+      }
 
       const response = await extensionSettingsService.syncSettings(syncStatus.lastSync)
       console.log('Sync response:', response)
@@ -188,11 +203,15 @@ export default function Extension() {
         lastSync: syncedSettings.lastSync,
         status: 'synced'
       })
-      console.log('✅ Sync completed successfully')
+      console.log('✅ Manual sync completed successfully')
       toast.success('Settings synced successfully!')
     } catch (e) {
       console.error('❌ Sync failed:', e)
-      toast.error(`Failed to sync preferences: ${e.message}`)
+      if (e.message.includes('rate limit') || e.message.includes('Too many requests')) {
+        toast.error('Rate limit exceeded. Please wait before syncing again.')
+      } else {
+        toast.error(`Failed to sync preferences: ${e.message}`)
+      }
       setSyncStatus((prev) => ({ ...prev, status: 'error' }))
     }
   }
@@ -277,7 +296,7 @@ export default function Extension() {
       console.log('✅ Settings saved successfully')
       toast.success('Extension settings saved successfully!')
 
-      // Sync settings to extension chrome.storage
+      // Sync settings to extension chrome.storage (local only, no server sync to prevent rate limits)
       await syncSettingsToExtension(updatedSettings)
     } catch (e) {
       console.error('❌ Save failed:', e)
@@ -424,13 +443,10 @@ export default function Extension() {
               <div className="bg-[#FAFCFF] p-6 rounded-lg">
                 <p className="text-base text-gray-900 leading-relaxed">
                   This is a sample text with{' '}
-                  {settings.flaggingStyle === 'blur' && <span className="filter blur-[4px] bg-gray-100 px-2">flagged content</span>}
-                  {settings.flaggingStyle === 'highlight' && <span style={{ backgroundColor: settings.highlightColor || '#374151' }} className="px-2">flagged content</span>}
-                  {settings.flaggingStyle === 'asterisk' && <span className="px-2">**************</span>}
-                  {settings.flaggingStyle === 'underline' && (
-                    <span style={{ textDecoration: 'underline', textDecorationColor: settings.highlightColor || '#374151', textDecorationThickness: '2px' }} className="px-2">flagged content</span>
-                  )}
-                  {settings.flaggingStyle === 'none' && <span className="px-2">flagged content</span>} in context. You can customize how sensitive content appears using the settings below.
+                  {settings.flaggingStyle === 'blur' && <span className="filter blur-[4px] bg-gray-100 px-2 rounded">flagged content</span>}
+                  {settings.flaggingStyle === 'highlight' && <span style={{ backgroundColor: settings.highlightColor || '#374151', color: 'white' }} className="px-2 py-1 rounded">flagged content</span>}
+                  {settings.flaggingStyle === 'asterisk' && <span className="px-2 font-mono text-gray-600">**************</span>}
+                  {' '}in context. You can customize how sensitive content appears using the settings below.
                 </p>
               </div>
             </div>
@@ -442,32 +458,54 @@ export default function Extension() {
                   <p className="text-sm text-gray-500">Choose how to display flagged content</p>
                 </div>
                 <select value={settings.flaggingStyle} onChange={(e) => handleSettingChange('flaggingStyle', e.target.value)} className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#015763] focus-visible:ring-offset-2">
-                  <option value="blur">Blur Content</option>
                   <option value="highlight">Highlight Content</option>
+                  <option value="blur">Blur Content</option>
                   <option value="asterisk">Replace with Asterisks</option>
-                  <option value="underline">Underline Content</option>
-                  <option value="none">No Visual Change</option>
                 </select>
               </div>
 
-              <div className="rounded-lg border border-gray-200 p-6">
-                <div className="flex flex-col gap-1.5 mb-4">
-                  <label className="text-sm font-medium text-gray-900">Highlight Color</label>
-                  <p className="text-sm text-gray-500">Select color for highlights and underlines</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <input type="color" value={settings.highlightColor || '#374151'} onChange={(e) => handleSettingChange('highlightColor', e.target.value)} className="h-10 w-20 rounded-md cursor-pointer border border-gray-200" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-900">{settings.highlightColor?.toUpperCase() || '#374151'}</span>
-                    <span className="text-xs text-gray-500">Click to change</span>
+              {/* Show Highlight Toggle for blur and asterisk */}
+              {(settings.flaggingStyle === 'blur' || settings.flaggingStyle === 'asterisk') && (
+                <div className="rounded-lg border border-gray-200 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-gray-900">Show Highlight</label>
+                      <p className="text-sm text-gray-500">Add highlight color to {settings.flaggingStyle} effect</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settings.showHighlight}
+                        onChange={(e) => handleSettingChange('showHighlight', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#015763]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#015763]"></div>
+                    </label>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-4">
-                  {presetColors.map((color) => (
-                    <button type="button" key={color} onClick={() => handleSettingChange('highlightColor', color)} title={color.toUpperCase()} className={`h-8 w-8 rounded-full border ${(settings.highlightColor || '#374151').toLowerCase() === color.toLowerCase() ? 'ring-2 ring-[#015763] border-transparent' : 'border-gray-200'}`} style={{ backgroundColor: color }} />
-                  ))}
+              )}
+
+              {/* Show Color Picker when highlight is enabled OR when flagging style is highlight */}
+              {(settings.flaggingStyle === 'highlight' || (settings.showHighlight && (settings.flaggingStyle === 'blur' || settings.flaggingStyle === 'asterisk'))) && (
+                <div className="rounded-lg border border-gray-200 p-6">
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    <label className="text-sm font-medium text-gray-900">Highlight Color</label>
+                    <p className="text-sm text-gray-500">Select color for highlights and effects</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <input type="color" value={settings.highlightColor || '#374151'} onChange={(e) => handleSettingChange('highlightColor', e.target.value)} className="h-10 w-20 rounded-md cursor-pointer border border-gray-200" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900">{settings.highlightColor?.toUpperCase() || '#374151'}</span>
+                      <span className="text-xs text-gray-500">Click to change</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-4">
+                    {presetColors.map((color) => (
+                      <button type="button" key={color} onClick={() => handleSettingChange('highlightColor', color)} title={color.toUpperCase()} className={`h-8 w-8 rounded-full border ${(settings.highlightColor || '#374151').toLowerCase() === color.toLowerCase() ? 'ring-2 ring-[#015763] border-transparent' : 'border-gray-200'}`} style={{ backgroundColor: color }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

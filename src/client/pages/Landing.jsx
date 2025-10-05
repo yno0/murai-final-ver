@@ -1,7 +1,5 @@
-import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import Logo from "../../shared/assets/Logo.svg";
 import LogoMain from "../../shared/assets/LogoMain.svg";
 import HeroImg from "../../shared/assets/hero-img.png";
 
@@ -34,28 +32,22 @@ export default function WaitlistLandingPage() {
 
   const flaggingTechniques = [
     {
-      type: 'original',
+      type: 'highlight',
       text: 'inappropriate',
       display: 'inappropriate',
-      style: 'text-red-400 font-bold transform scale-105'
+      style: 'bg-gray-600 text-white px-3 py-1 rounded-lg shadow-lg transform scale-105'
     },
     {
       type: 'blur',
       text: 'inappropriate',
       display: 'inappropriate',
-      style: 'blur-sm text-gray-500 transform scale-95'
+      style: 'blur-sm text-gray-500 bg-gray-200 px-3 py-1 rounded-lg transform scale-95'
     },
     {
       type: 'asterisk',
       text: 'inappropriate',
       display: 'inappropr****',
-      style: "text-gray-500 font-['Playfair_Display',_serif] tracking-wider transform scale-100"
-    },
-    {
-      type: 'highlight',
-      text: 'inappropriate',
-      display: 'inappropriate',
-      style: 'bg-yellow-300 text-black px-3 py-1 rounded-lg shadow-lg transform scale-105'
+      style: "text-gray-600 font-mono tracking-wider transform scale-100 font-bold"
     }
   ];
 

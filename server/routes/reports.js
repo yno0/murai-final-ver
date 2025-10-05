@@ -1,6 +1,7 @@
 import express from 'express';
 import {
     createReport,
+    createDirectReport,
     getUserReports,
     getReport,
     updateReportStatus,
@@ -14,7 +15,7 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticateToken);
 
-// Create a new report
+// Create a new report (requires existing flagged content)
 router.post('/', (req, res, next) => {
     console.log('📝 ===== REPORT ROUTE HIT =====');
     console.log('📝 Method:', req.method);
@@ -27,6 +28,20 @@ router.post('/', (req, res, next) => {
     console.log('📝 Body size:', JSON.stringify(req.body).length, 'characters');
     next();
 }, createReport);
+
+// Create a direct report (without requiring flagged content)
+router.post('/direct', (req, res, next) => {
+    console.log('📝 ===== DIRECT REPORT ROUTE HIT =====');
+    console.log('📝 Method:', req.method);
+    console.log('📝 URL:', req.originalUrl);
+    console.log('📝 Headers:', JSON.stringify({
+        'content-type': req.headers['content-type'],
+        'authorization': req.headers['authorization'] ? 'Bearer [TOKEN_PRESENT]' : 'NO_AUTH',
+        'user-agent': req.headers['user-agent']?.substring(0, 50) + '...'
+    }, null, 2));
+    console.log('📝 Body size:', JSON.stringify(req.body).length, 'characters');
+    next();
+}, createDirectReport);
 
 // Get all reports for the authenticated user
 router.get('/', getUserReports);

@@ -32,7 +32,7 @@ const extensionSettingsSchema = new mongoose.Schema({
     // Content Flagging Settings
     flaggingStyle: {
         type: String,
-        enum: ['blur', 'highlight', 'asterisk', 'underline', 'none'],
+        enum: ['blur', 'highlight', 'asterisk'],
         default: 'highlight'
     },
     highlightColor: {

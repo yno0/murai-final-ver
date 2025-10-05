@@ -128,7 +128,10 @@ export function ClientSidebar() {
     >
       <button
         className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition text-sm"
-        onClick={() => setShowAccountMenu(false)}
+        onClick={() => {
+          setShowAccountMenu(false)
+          navigate('/client/settings')
+        }}
       >
         <FiSettings /> <span>Settings</span>
       </button>
@@ -175,10 +178,10 @@ export function ClientSidebar() {
   return (
     <>
       <aside
-        className={`bg-white h-screen flex flex-col justify-between border-r border-gray-200 transition-all duration-300 pt-3 ${
+        className={`bg-white h-screen flex flex-col justify-between border-r border-gray-200 transition-all duration-300 pt-3 sticky top-0 ${
           isOpen ? 'w-68' : 'w-16'
         }`}
-        style={{ fontFamily: 'Poppins, sans-serif', position: 'relative' }}
+        style={{ fontFamily: 'Poppins, sans-serif' }}
       >
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400" style={{ scrollBehavior: 'smooth' }}>
           {!isOpen && (
@@ -249,12 +252,10 @@ export function ClientSidebar() {
                 <div className="px-3 py-2">
                   {lowerMenu.map((item) => {
                     const isActive = item.href ? location.pathname === item.href : false;
-                    const Element = item.href ? 'a' : 'button';
                     return (
-                      <Element
+                      <button
                         key={item.label}
-                        href={item.href}
-                        onClick={item.onClick}
+                        onClick={item.href ? () => navigate(item.href) : item.onClick}
                         className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg w-full transition-all duration-200 ease-in-out ${
                           isActive
                             ? 'bg-white text-[#015763] shadow-sm font-semibold'
@@ -268,7 +269,7 @@ export function ClientSidebar() {
                           <span className="pl-0.5">{item.label}</span>
                         </div>
                         {item.rightElement}
-                      </Element>
+                      </button>
                     );
                   })}
                 </div>
